@@ -40,3 +40,8 @@ server/app_dump.sql
 # Archives / backups
 _archive/
 *.zip
+# Local DBs
+*.sqlite
+*.sqlite3
+*.db
+*.db3
