@@ -1,0 +1,27 @@
+<!-- Path: /admin/sections/card-grid.html -->
+<div class="card">
+  <h2 style="margin:0 0 8px">Card Grid</h2>
+  <p class="muted" style="margin:0 0 12px">
+    Control how many product cards appear per row on each page.
+  </p>
+
+  <form id="card-grid-form" class="grid-3" onsubmit="return false">
+    <div>
+      <label class="muted">Home (rows)</label>
+      <input id="cg-home" class="input" type="number" min="1" max="8" step="1" />
+    </div>
+    <div>
+      <label class="muted">Category</label>
+      <input id="cg-category" class="input" type="number" min="1" max="8" step="1" />
+    </div>
+    <div>
+      <label class="muted">Search</label>
+      <input id="cg-search" class="input" type="number" min="1" max="8" step="1" />
+    </div>
+
+    <div style="grid-column:1/-1;display:flex;gap:8px;align-items:center;margin-top:6px">
+      <button id="cg-save" class="btn primary" type="submit">Save</button>
+      <span id="cg-status" class="muted"></span>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Categories Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:20px}
+    h1{margin:0 0 16px}
+    .row{display:flex;gap:28px;align-items:flex-start}
+    .card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;width:520px}
+    .head{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+    input,select,button{padding:8px;font-size:14px}
+    input,select{border:1px solid #bbb;border-radius:8px}
+    button{border:1px solid #333;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+    button.secondary{background:#f8f8f8;color:#111;border-color:#bbb}
+    ul{list-style:none;margin:0;padding:0}
+    li{display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;padding:8px 0}
+    .name{flex:1}
+    .actions{display:flex;gap:6px}
+    .muted{color:#666;font-size:12px;margin-top:6px}
+  </style>
+</head>
+<body>
+  <h1>Categories Admin</h1>
+
+  <div class="row">
+    <div class="card">
+      <div class="head"><strong>Main categories</strong></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="mainInput" placeholder="New main category" />
+        <button id="mainAdd">Add</button>
+      </div>
+      <ul id="mainList"></ul>
+      <div class="muted">Edit = rename (updates the name); Delete removes the category.</div>
+    </div>
+
+    <div class="card">
+      <div class="head"><strong>Home categories</strong></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="homeInput" placeholder="New home category" />
+        <button id="homeAdd">Add</button>
+      </div>
+      <ul id="homeList"></ul>
+      <div class="muted">Edit = rename (updates the name); Delete removes the category.</div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (s, r=document) => r.querySelector(s);
+    const API = ''; // through gateway at same origin
+
+    // Fetchers
+    async function fetchList(type){
+      const res = await fetch(`${API}/api/categories?type=${encodeURIComponent(type)}`);
+      if(!res.ok) throw new Error('Load failed');
+      return res.json();
+    }
+    async function addCategory(type, value){
+      const res = await fetch(`${API}/api/categories`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ type, value })
+      });
+      if(!res.ok) throw new Error('Add failed');
+      return res.json();
+    }
+    async function renameCategory(type, oldName, newName){
+      const res = await fetch(`${API}/api/categories/rename`, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ type, oldName, newName })
+      });
+      if(!res.ok) throw new Error('Rename failed');
+      return res.json();
+    }
+    async function deleteCategory(type, name){
+      const res = await fetch(`${API}/api/categories/${encodeURIComponent(type)}/${encodeURIComponent(name)}`, {
+        method:'DELETE'
+      });
+      if(!res.ok) throw new Error('Delete failed');
+      return res.json();
+    }
+
+    function renderItem(type, name){
+      const li = document.createElement('li');
+      const left = document.createElement('div');
+      left.className='name';
+      left.textContent = name;
+
+      const actions = document.createElement('div');
+      actions.className='actions';
+
+      // Edit (rename)
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit';
+      editBtn.className = 'secondary';
+      editBtn.onclick = async () => {
+        const newName = prompt('Rename category to:', name);
+        if(!newName || newName.trim() === '' || newName === name) return;
+        try{
+          await renameCategory(type, name, newName.trim());
+          await refresh();
+        }catch(e){ alert(e.message || 'Rename failed'); }
+      };
+
+      // Delete
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.onclick = async () => {
+        if(!confirm(`Delete "${name}" from ${type} categories?`)) return;
+        try{
+          await deleteCategory(type, name);
+          await refresh();
+        }catch(e){ alert(e.message || 'Delete failed'); }
+      };
+
+      actions.append(editBtn, delBtn);
+      li.append(left, actions);
+      return li;
+    }
+
+    async function refresh(){
+      const [main, home] = await Promise.all([fetchList('main'), fetchList('home')]);
+      const mainList = $('#mainList'); mainList.innerHTML = '';
+      main.forEach(n => mainList.appendChild(renderItem('main', n)));
+
+      const homeList = $('#homeList'); homeList.innerHTML = '';
+      home.forEach(n => homeList.appendChild(renderItem('home', n)));
+    }
+
+    // Add handlers
+    $('#mainAdd').onclick = async () => {
+      const v = $('#mainInput').value.trim();
+      if(!v) return;
+      try{ await addCategory('main', v); $('#mainInput').value=''; await refresh(); }
+      catch(e){ alert(e.message || 'Add failed'); }
+    };
+    $('#homeAdd').onclick = async () => {
+      const v = $('#homeInput').value.trim();
+      if(!v) return;
+      try{ await addCategory('home', v); $('#homeInput').value=''; await refresh(); }
+      catch(e){ alert(e.message || 'Add failed'); }
+    };
+
+    // Initial load
+    refresh().catch(err => alert(err.message || err));
+  </script>
+</body>
+</html>

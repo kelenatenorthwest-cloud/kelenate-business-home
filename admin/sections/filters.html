@@ -1,0 +1,159 @@
+<!-- File: E:\amazon-business-home\admin\sections\filters.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Filters</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --accent:#ff9900; --muted:#6b7280; --b:#e5e7eb; --card:#fff; --text:#0f1111; --bad:#dc2626; }
+    *{box-sizing:border-box}
+    body{margin:0;padding:0.5rem 0 1.25rem;background:transparent;color:var(--text);font:14px/1.45 "Amazon Ember","Open Sans",Arial,sans-serif}
+    .wrap{max-width:1200px;margin:0 auto;padding:0 12px}
+    .row{display:flex;gap:12px;align-items:center}
+    .muted{color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--b);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:16px}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{border:1px solid var(--b);background:#fff;padding:8px 12px;border-radius:999px;cursor:pointer}
+    .tab.active{background:var(--accent);border-color:var(--accent);color:#111}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{border-bottom:1px solid var(--b);padding:10px;vertical-align:middle}
+    .table th{background:#f9fafb;text-align:left}
+    .right{text-align:right}
+    input[type="text"], input[type="number"], select{width:100%;padding:8px;border:1px solid var(--b);border-radius:8px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--b);border-radius:8px;background:#fff;cursor:pointer}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#111}
+    .btn.danger{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+    .btn.small{padding:6px 8px;font-size:12px}
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:8px 0 12px}
+    .dot{display:inline-block;width:14px;height:14px;border-radius:999px;border:1px solid var(--b);vertical-align:middle;margin-right:8px}
+    .row-actions{display:flex;gap:6px;justify-content:flex-end}
+    .alert{padding:10px;border-radius:8px;background:#fef3c7;border:1px solid #fde68a;margin-bottom:12px}
+    .error{color:var(--bad);font-size:12px}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr} .grid-3{grid-template-columns:1fr 1fr 1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="tabs" role="tablist" aria-label="Filters tabs">
+        <!-- Requested order: Colours → Price Bands → Discounts → Settings -->
+        <button class="tab active" data-tab="colors">Colours</button>
+        <button class="tab" data-tab="bands">Price Bands</button>
+        <button class="tab" data-tab="discounts">Discounts</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </div>
+
+      <!-- COLOURS -->
+      <section data-panel="colors">
+        <div class="toolbar">
+          <button id="addColor" class="btn small">+ Add Colour</button>
+        </div>
+        <table class="table" id="colorsTable">
+          <thead>
+            <tr>
+              <th style="width:44px">Dot</th>
+              <th>Name</th>
+              <th class="right" style="width:160px">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <template id="rowColor">
+          <tr>
+            <td><span class="dot"></span></td>
+            <td class="name"></td>
+            <td class="right row-actions">
+              <button class="btn small edit">Edit</button>
+              <button class="btn small danger del">Delete</button>
+            </td>
+          </tr>
+        </template>
+      </section>
+
+      <!-- PRICE BANDS -->
+      <section data-panel="bands" hidden>
+        <div class="toolbar">
+          <button id="addBand" class="btn small">+ Add Price Band</button>
+        </div>
+        <table class="table" id="bandsTable">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th style="width:140px">Min</th>
+              <th style="width:140px">Max</th>
+              <th class="right" style="width:160px">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <template id="rowBand">
+          <tr>
+            <td class="label"></td>
+            <td class="min"></td>
+            <td class="max"></td>
+            <td class="right row-actions">
+              <button class="btn small edit">Edit</button>
+              <button class="btn small danger del">Delete</button>
+            </td>
+          </tr>
+        </template>
+      </section>
+
+      <!-- DISCOUNTS -->
+      <section data-panel="discounts" hidden>
+        <div class="toolbar">
+          <button id="addDiscount" class="btn small">+ Add Discount</button>
+        </div>
+        <table class="table" id="discountsTable">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th style="width:160px">Min %</th>
+              <th class="right" style="width:160px">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <template id="rowDiscount">
+          <tr>
+            <td class="label"></td>
+            <td class="min"></td>
+            <td class="right row-actions">
+              <button class="btn small edit">Edit</button>
+              <button class="btn small danger del">Delete</button>
+            </td>
+          </tr>
+        </template>
+      </section>
+
+      <!-- SETTINGS -->
+      <section data-panel="settings" hidden>
+        <div class="grid">
+          <div>
+            <label for="mode"><b>Unavailable mode</b></label>
+            <div class="muted" style="margin:4px 0 6px">How to treat options that would hide all visible products.</div>
+            <select id="mode">
+              <option value="lock">lock — show but disable</option>
+              <option value="hide">hide — remove from list</option>
+            </select>
+          </div>
+          <div class="alert">
+            This controls the left rail on <b>Category</b> and <b>Search</b> pages only. Home page shows category list only.
+          </div>
+        </div>
+      </section>
+
+      <div class="divider" style="height:1px;background:#e5e7eb;margin:14px 0"></div>
+      <div class="row" style="justify-content:flex-end;gap:8px">
+        <span id="saveError" class="error" style="display:none"></span>
+        <button id="save" class="btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Behavior is initialized by /admin/js/admin-filters.js via admin-shell.js -->
+</body>
+</html>

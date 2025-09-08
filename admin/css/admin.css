@@ -1,0 +1,244 @@
+/* ============ Admin UI base ============ */
+:root{
+  --bg:#fff;
+  --text:#111;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --card:#ffffff;
+  --card-alt:#f8fafc;
+  --accent:#f97316;
+  --accent-contrast:#ffffff;
+  --danger:#dc2626;
+
+  /* NEW: semantic status colors for live progress */
+  --ok:#16a34a;
+  --ok-bg:#ecfdf5;
+  --ok-border:#bbf7d0;
+
+  --warn:#d97706;
+  --warn-bg:#fff7ed;
+  --warn-border:#fed7aa;
+
+  --info:#2563eb;
+  --info-bg:#eff6ff;
+  --info-border:#bfdbfe;
+
+  --pending:#6b7280;
+  --pending-bg:#f1f5f9;
+  --pending-border:#e5e7eb;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:14px/1.45 "Open Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+}
+
+/* ============ Layout helpers ============ */
+.stack{display:flex;gap:8px;align-items:center}
+.right{display:flex;justify-content:flex-end}
+.nowrap{white-space:nowrap}
+.muted{color:var(--muted)}
+.section-title{margin:0 0 12px;font-size:18px;font-weight:700}
+
+/* Grids */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:900px){
+  .grid-3{grid-template-columns:1fr}
+  .grid-2{grid-template-columns:1fr}
+}
+
+/* ============ Cards ============ */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.card + .card{margin-top:16px}
+
+/* ============ Tabs ============ */
+.tabs{display:flex;gap:8px;margin:10px 0 16px;flex-wrap:wrap}
+.tabs button{
+  padding:8px 12px;
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:8px;
+  cursor:pointer;
+  color:var(--text);
+}
+.tabs button.active{
+  background:var(--accent);
+  color:var(--accent-contrast);
+  border-color:var(--accent);
+}
+.tabs button:focus{outline:2px solid rgba(17,17,17,.22);outline-offset:2px}
+.tabs button:disabled{opacity:.5;cursor:not-allowed}
+
+/* ============ Inputs & Buttons ============ */
+.input, select.input, textarea.input{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  color:var(--text);
+}
+.input::placeholder{color:#94a3b8}
+.input:focus{outline:none;border-color:#cbd5e1;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.input[disabled]{background:#f8fafc;color:#94a3b8;cursor:not-allowed}
+
+.btn{
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  cursor:pointer;
+}
+.btn:hover{background:#f9fafb}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn.primary{
+  background:var(--accent);
+  color:var(--accent-contrast);
+  border-color:var(--accent);
+}
+.btn.primary:hover{filter:brightness(.95)}
+.btn.danger{
+  background:#fff;
+  color:var(--danger);
+  /* fallback then color-mix (unsupported browsers will keep the first) */
+  border-color:var(--border);
+  border-color: color-mix(in srgb, var(--danger) 35%, #e5e7eb);
+}
+.btn.danger:hover{background:#fef2f2}
+
+/* ============ Tables ============ */
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{
+  text-align:left;
+  font-weight:600;
+  color:var(--muted);
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  background:var(--card-alt);
+}
+tbody td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+tbody tr:hover{background:#fcfcfd}
+table .thumb{
+  width:56px;height:56px;
+  object-fit:contain;
+  background:#f3f4f6;
+  border:1px solid var(--border);
+  border-radius:8px;
+}
+
+/* Status bars under tables */
+#inv-status,#del-status{padding:4px 0;color:var(--muted)}
+
+/* ============ Forms (editor) ============ */
+textarea.input{resize:vertical}
+label.muted{display:block;margin-bottom:6px}
+
+/* ============ Utilities ============ */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 8px;border-radius:999px;font-size:12px;
+  background:#f1f5f9;color:#0f172a;border:1px solid var(--border);
+}
+
+/* NEW: monospace helper for ASIN/SKU */
+.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+.tiny{font-size:12px}
+
+/* NEW: colored status pills (for field-by-field progress) */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 8px;border-radius:999px;font-size:12px;
+  background:#f8fafc;color:#0f172a;border:1px solid var(--border);
+  line-height:1.1;
+}
+.pill .dot{
+  width:8px;height:8px;border-radius:999px;background:var(--muted);display:inline-block;
+}
+
+/* Variants */
+.pill.ok    { background:var(--ok-bg);    color:var(--ok);    border-color:var(--ok-border); }
+.pill.warn  { background:var(--warn-bg);  color:var(--warn);  border-color:var(--warn-border); }
+.pill.err   { background:#fef2f2;         color:var(--danger);border-color:#fecaca; }
+.pill.info  { background:var(--info-bg);  color:var(--info);  border-color:var(--info-border); }
+.pill.wait  { background:var(--pending-bg); color:var(--pending); border-color:var(--pending-border); }
+
+.pill.ok   .dot{ background:var(--ok); }
+.pill.warn .dot{ background:var(--warn); }
+.pill.err  .dot{ background:var(--danger); }
+.pill.info .dot{ background:var(--info); }
+.pill.wait .dot{ background:var(--pending); }
+
+/* NEW: inline spinner for "Checking… / Importing…" */
+.spinner{
+  width:14px;height:14px;display:inline-block;vertical-align:middle;
+  border-radius:50%;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  animation:spin .9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* NEW: compact progress bar (optional top-of-table summary) */
+.progress{
+  height:6px;border-radius:999px;background:#f1f5f9;overflow:hidden;border:1px solid var(--border);
+}
+.progress .bar{
+  height:100%;width:0%;
+  background:linear-gradient(90deg, var(--accent), #fb923c);
+  transition:width .3s ease;
+}
+
+/* NEW: cell grid to show 4 small field pills inside one cell (Title/MRP/Price/Images) */
+.cell-stats{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  gap:6px;
+}
+.cell-stats .pill{
+  justify-content:center;
+  padding:4px 6px;
+  border-radius:8px;
+  font-size:12px;
+}
+
+/* NEW: column width helpers for the bulk table (optional) */
+th.col-asin,    td.col-asin{width:140px}
+th.col-status,  td.col-status{width:120px}
+th.col-title,   td.col-title{width:280px}
+th.col-mrp,     td.col-mrp{width:110px}
+th.col-price,   td.col-price{width:110px}
+th.col-images,  td.col-images{width:160px}
+th.col-actions, td.col-actions{width:120px}
+
+/* ============ Responsive tweaks ============ */
+@media (max-width:700px){
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tbody tr{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;padding:8px;background:#fff}
+  tbody td{border:none;padding:6px 8px}
+  tbody td::before{
+    content:attr(data-label);
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+
+  /* NEW: make the 4-field grid stack better on mobile */
+  .cell-stats{grid-template-columns:repeat(2, minmax(0,1fr))}
+}

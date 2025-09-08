@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Shopping Cart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <style>
+    .container { max-width: 1280px; margin: 0 auto; padding: 12px; }
+    .cart-grid { display: grid; grid-template-columns: 1fr 360px; gap: 18px; }
+    @media (max-width: 1024px){ .cart-grid{ grid-template-columns: 1fr; } .summary{ position: static; } }
+
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; }
+    .card.pad { padding:16px 18px; }
+
+    .row{ display:flex; gap:12px; }
+    .row.ai-start{ align-items:flex-start; }
+    .row.ai-center{ align-items:center; }
+    .row.jc-between{ justify-content:space-between; }
+    .img{ width:140px; height:140px; display:flex; align-items:center; justify-content:center; border:1px solid #eee; border-radius:10px; overflow:hidden; background:#fff; }
+    .img img{ max-width:100%; max-height:100%; }
+    .tiny{ font-size:12px; }
+    .muted{ color:#6b7280; }
+    .pill { padding:2px 8px; border-radius:999px; background:#ecfdf5; color:#065f46; font-size:12px; border:1px solid #a7f3d0; }
+    .qty { height:32px; border:1px solid #d1d5db; border-radius:8px; padding:2px 8px; }
+    .hr{ height:1px; background:#eee; margin:14px 0; }
+
+    /* RIGHT summary (as before) */
+    .summary { position: sticky; top: 80px; }
+    .summary .head { font-weight:600; }
+    .summary .subtotal-line{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+    .summary .amount{ font-weight:700; font-size:18px; }
+    .summary .incl{ color:#b91c1c; font-weight:600; font-size:12px; margin-left:6px; }
+    .buy-btn{ width:100%; height:44px; margin-top:12px; background:#FFD814; border:1px solid #FCD200; color:#111827; border-radius:8px; font-weight:700; cursor:pointer; }
+    .buy-btn:hover{ background:#F7CA00; } .buy-btn:active{ background:#F0B800; } .buy-btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .gift-row{ display:flex; align-items:center; gap:8px; margin-top:12px; font-size:12px; color:#374151; }
+    details.emi { margin-top:10px; border-top:1px solid #e5e7eb; padding-top:10px; }
+    details.emi summary{ list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:14px; color:#111827; }
+    details.emi summary::-webkit-details-marker{ display:none; }
+    .emi .chev{ transition: transform .2s ease; }
+    details.emi[open] .chev{ transform: rotate(180deg); }
+    .emi-body{ margin-top:6px; font-size:12px; color:#6b7280; }
+
+    /* NEW: left-side subtotal line */
+    .left-sub-wrap { margin-top:8px; display:none; }
+    .left-sub-rule { height:1px; background:#e5e7eb; margin:14px 0 10px; }
+    .left-sub-row { display:flex; align-items:baseline; justify-content:flex-end; gap:6px; font-size:18px; }
+    .left-sub-row .amount { font-weight:700; }
+    .left-sub-row .incl { color:#b91c1c; font-weight:600; font-size:12px; }
+
+    /* ============================
+       MOBILE-ONLY ITEM LAYOUT TWEAKS
+       - Title: clamp to 2 lines
+       - Price: move to next line under the title
+       ============================ */
+    @media (max-width: 768px){
+      /* allow wrapping inside typical cart rows without touching desktop */
+      #cartList .row.ai-start{ flex-wrap:wrap; }
+
+      /* 2-line clamp for most common title selectors */
+      #cartList .title,
+      #cartList .item-title,
+      #cartList h3{
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:2;
+        overflow:hidden;
+        line-height:1.25;
+        max-height:calc(1.25em * 2);
+        width:100%;
+        margin:0 0 4px 0;
+      }
+
+      /* Put price on its own line just below the title */
+      #cartList .price,
+      #cartList .item-price,
+      #cartList .amount{
+        display:block;
+        width:100%;
+        order:2;
+        margin-top:4px;
+        text-align:left !important;
+        font-weight:700;
+      }
+
+      /* a little breathing room for qty on mobile rows */
+      #cartList .qty{ margin-top:6px; }
+    }
+
+    /* ============================
+       MOBILE-ONLY REORDER:
+       summary ABOVE items (≤768px)
+       ============================ */
+    @media (max-width: 768px){
+      .cart-grid{
+        display:flex !important;
+        flex-direction:column;
+        gap:12px;
+      }
+      .summary{
+        order:1;
+        position:static;   /* already handled at ≤1024, keep explicit here */
+        margin-bottom:4px;
+      }
+      .cart-grid > section.card{
+        order:2;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="site-chrome" data-include="/partials/header.html"></div>
+
+  <main class="container">
+    <div class="cart-grid">
+      <!-- LEFT: items -->
+      <section class="card pad">
+        <div class="row jc-between ai-center">
+          <h1 style="margin:0;">Shopping Cart</h1>
+        </div>
+
+        <div id="cartList" class="cart-list" style="margin-top:8px;"></div>
+
+        <!-- NEW: left-side subtotal with small line above -->
+        <div id="leftSubWrap" class="left-sub-wrap">
+          <div class="left-sub-rule"></div>
+          <div class="left-sub-row">
+            <span>Subtotal (<span id="countLeft">0</span> items):</span>
+            <span class="amount" id="subtotalLeft">—</span>
+            <span class="incl">incl. GST</span>
+          </div>
+        </div>
+
+        <div id="emptyCart" class="muted" style="display:none; padding:16px 0;">
+          Your cart is empty.
+        </div>
+      </section>
+
+      <!-- RIGHT: summary -->
+      <aside class="summary">
+        <div class="card pad">
+          <div class="head">Subtotal (<span id="count">0</span> items):</div>
+          <div class="subtotal-line">
+            <div class="amount" id="subtotal">—</div>
+            <div class="incl">incl. GST</div>
+          </div>
+
+          <label class="gift-row">
+            <input id="gift" type="checkbox" />
+            This order contains a gift
+          </label>
+
+          <button id="proceed" class="buy-btn">Proceed to Buy</button>
+
+          <details class="emi">
+            <summary>
+              <span>EMI Available</span>
+              <span class="material-symbols-outlined chev" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="emi-body">EMI plans may be offered on eligible cards during payment.</div>
+          </details>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- no footer include -->
+
+  <script type="module" src="/js/boot.js"></script>
+  <script type="module" src="/js/chrome-init.js?v=addr6"></script>
+  <script type="module" src="/js/cart.js"></script>
+</body>
+</html>

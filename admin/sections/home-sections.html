@@ -1,0 +1,41 @@
+<div class="card">
+  <h3 style="margin-top:0">Home Page Section</h3>
+  <p class="muted" style="margin:6px 0 16px">
+    Choose which <strong>categories</strong> power the homepage. Use the arrows to transfer and reorder.
+    <br/>Each selected category becomes <strong>one row</strong> on the buyer homepage in this order.
+  </p>
+
+  <form id="hpsec-form">
+    <div class="grid-3">
+      <!-- LEFT: available -->
+      <div>
+        <label><strong>Available categories</strong> <span class="muted">(Main + Home)</span></label>
+        <select id="hpsec-available" class="input" size="14" multiple style="height:280px"></select>
+      </div>
+
+      <!-- MIDDLE: transfer buttons -->
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center">
+        <button type="button" class="btn" id="btn-add">➜ Add</button>
+        <button type="button" class="btn" id="btn-remove">← Remove</button>
+        <div class="divider" style="width:100%"></div>
+        <button type="button" class="btn" id="btn-up">▲ Up</button>
+        <button type="button" class="btn" id="btn-down">▼ Down</button>
+      </div>
+
+      <!-- RIGHT: selected / ordered -->
+      <div>
+        <label><strong>Selected (display order)</strong></label>
+        <select id="hpsec-selected" class="input" size="14" multiple style="height:280px"></select>
+        <div class="muted" style="margin-top:6px">
+          The homepage will render rows for these categories in this order.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+      <button class="btn primary" type="submit">Save order</button>
+      <button class="btn" type="button" id="btn-reset">Reset</button>
+      <span id="hpsec-status" class="muted"></span>
+    </div>
+  </form>
+</div>

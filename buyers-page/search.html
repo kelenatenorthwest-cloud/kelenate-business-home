@@ -1,0 +1,151 @@
+<!-- File: E:\amazon-business-home\buyers-page\search.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search results • Kelenate</title>
+
+  <!-- Security: defense-in-depth (mirror server headers, allow inline in header partial) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self';
+          script-src 'self' 'unsafe-inline';
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          img-src 'self' data: blob: https:;
+          font-src 'self' https://fonts.gstatic.com data:;
+          connect-src 'self' http: https:;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          frame-ancestors 'none';
+        ">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet" />
+
+  <!-- Site base styles -->
+  <link rel="stylesheet" href="/css/styles.css" />
+
+  <!-- ✅ Load card/grid styles used by productCard (ensures consistent cards & row grid rules) -->
+  <link rel="stylesheet" href="/buyers-page/css/cards.css?v=7" />
+
+  <!-- Sidebar CSS (absolute path + cache-bust to ensure it loads) -->
+  <link rel="stylesheet" href="/buyers-page/css/side-categories.css?v=7" />
+  <!-- ^ v=7 includes the mobile hide + stronger .is-locked styles -->
+
+  <style>
+    /* Sidebar layout tuning for this page */
+    .with-sidebar { gap:12px; --stickyTop:112px; --sidebarW:210px; }
+    .with-sidebar .content { min-width:0; }
+
+    /* Hug the left rail (avoid big gutter) */
+    .srch-wrap { max-width:100%; margin:16px 12px; padding:0; }
+
+    .srch-head { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+    .srch-title { font-size:20px; font-weight:700; }
+    .srch-controls { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+    /* ✅ IMPORTANT:
+       Do NOT make #grid a grid itself. The JS renderer creates an inner
+       <div class="products search-products"> with its own (Admin-set) columns.
+       Keeping #grid as a block container lets the inner grid span full width. */
+    .srch-grid { display:block; }
+
+    .product { display:block; text-decoration:none; color:inherit; }
+    .product .img { height:160px; border-radius:8px; background:#f8f8f8 center/cover no-repeat; margin-bottom:8px; }
+    .product .title { font-size:14px; line-height:1.3; height:36px; overflow:hidden; }
+    .product .price { font-weight:700; margin-top:2px; }
+
+    .muted { color:#6b7280; }
+    select, input[type="search"]{ border:1px solid #d5d9d9; border-radius:6px; padding:6px 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Shared header -->
+  <div data-include="/partials/header.html"></div>
+
+  <!-- PAGE LAYOUT: Sidebar (left) + Content (right) -->
+  <div class="page with-sidebar">
+    <!-- LEFT: Category sidebar + Filters (same as category page) -->
+    <aside class="sidecat" id="sideCategories" aria-label="Category">
+      <h3 class="sidecat__title">Category</h3>
+      <ul class="sidecat__path" id="catPath"></ul>
+      <ul class="sidecat__children" id="catChildren"></ul>
+
+      <!-- ── Filters panel (below categories) ───────────────────────── -->
+      <!-- Same hooks: data-locking + data-grid so locking observes #grid -->
+      <div class="filters" id="filters" data-locking="row-wise" data-grid="#grid">
+        <!-- Active chips show here -->
+        <div class="filters__active" id="activeFilters" aria-live="polite"></div>
+
+        <!-- Colour (admin-populated) -->
+        <section class="filter-group" data-group="color" aria-label="Filter by colour">
+          <div class="filter-title">Colour</div>
+          <ul class="checklist"></ul> <!-- Admin script fills items -->
+        </section>
+
+        <!-- Price (admin-populated) -->
+        <section class="filter-group" data-group="price" aria-label="Filter by price">
+          <div class="filter-title">Price</div>
+          <ul class="links"></ul> <!-- Admin script fills items -->
+        </section>
+
+        <!-- Discount (admin-populated) -->
+        <section class="filter-group" data-group="discount" aria-label="Filter by discount">
+          <div class="filter-title">Discount</div>
+          <ul class="links"></ul> <!-- Admin script fills items -->
+        </section>
+      </div>
+      <!-- ─────────────────────────────────────────────────────────────────── -->
+    </aside>
+
+    <!-- RIGHT: search content -->
+    <div class="content">
+      <div class="srch-wrap">
+        <div class="srch-head">
+          <div class="srch-title" id="srchTitle">Results</div>
+          <div class="muted" id="srchCount"></div>
+          <div class="srch-controls">
+            <select id="sort">
+              <option value="relevance">Relevance</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="title_asc">Title: A–Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ✅ Keep #grid as a simple container; the JS adds an inner
+             .products.search-products with Admin-controlled columns -->
+        <div id="grid" class="srch-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><div>© Kelenate.</div></footer>
+
+  <!-- Include system -->
+  <script defer src="/js/boot.js"></script>
+  <!-- Header wiring (logo/category menus/account) -->
+  <script type="module" src="/js/chrome-init.js"></script>
+  <!-- Header search suggestions -->
+  <script type="module" src="/js/searchbar.js"></script>
+
+  <!-- Page logic (renders product cards into #grid) -->
+  <!-- FIXED PATH: the file lives under /buyers-page/js/, not /js/ -->
+  <script type="module" src="/buyers-page/js/search-page.js"></script>
+
+  <!-- Sidebar behavior (absolute path + cache-bust) -->
+  <script type="module" src="/buyers-page/js/side-categories.js?v=7"></script>
+
+  <!-- 🔧 Admin-driven filters renderer (loads config & builds Colour/Price/Discount) -->
+  <script type="module" src="/buyers-page/js/category-filters-admin-config.js?v=1"></script>
+
+  <!-- Filter behavior (supports “Multi”, card data-colors & row-wise locking) -->
+  <script type="module" src="/buyers-page/js/category-filters.js?v=4"></script>
+</body>
+</html>

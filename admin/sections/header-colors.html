@@ -1,0 +1,39 @@
+<!-- admin/sections/header-colors.html -->
+<div class="panel">
+  <h2>Header Colors</h2>
+  <p class="muted">Pick colors for the two header bars shown on buyer pages. Changes save to settings and apply site-wide.</p>
+
+  <div class="card" style="display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;">
+    <div>
+      <label class="muted tiny" for="hdrColor">Top bar color (".header")</label>
+      <div style="display:flex;gap:8px;align-items:center;margin:6px 0 12px;">
+        <input id="hdrColor" type="color" value="#131921" style="width:44px;height:36px;border:1px solid #e5e7eb;border-radius:6px;"/>
+        <input id="hdrColorText" type="text" value="#131921" class="input" placeholder="#131921"/>
+      </div>
+
+      <label class="muted tiny" for="navColor">Second bar color (".subnav")</label>
+      <div style="display:flex;gap:8px;align-items:center;margin:6px 0 12px;">
+        <input id="navColor" type="color" value="#232f3e" style="width:44px;height:36px;border:1px solid #e5e7eb;border-radius:6px;"/>
+        <input id="navColorText" type="text" value="#232f3e" class="input" placeholder="#232f3e"/>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn primary" id="btnSaveColors">Save Colors</button>
+        <button class="btn" id="btnResetColors">Reset to Defaults</button>
+      </div>
+
+      <div class="tiny muted" style="margin-top:10px;">
+        Defaults are <code>#131921</code> (top) and <code>#232f3e</code> (subnav).
+      </div>
+    </div>
+
+    <div>
+      <div class="tiny muted" style="margin-bottom:6px;">Live Preview</div>
+      <div id="preview" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff">
+        <div id="previewTop"  style="height:48px;background:#131921;"></div>
+        <div id="previewSub"  style="height:36px;background:#232f3e;"></div>
+        <div style="padding:12px;color:#374151;font-size:14px;">This preview approximates the two bars.</div>
+      </div>
+    </div>
+  </div>
+</div>

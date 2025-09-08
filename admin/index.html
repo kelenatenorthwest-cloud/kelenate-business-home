@@ -1,0 +1,105 @@
+<!-- Path: E:\amazon-business-home\admin\index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --sidebar:#131921; --accent:#ff9900; --bg:#f3f4f6; --card:#fff; --muted:#6b7280; --text:#0f1111; --font:"Amazon Ember","Open Sans",Arial,sans-serif; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex}
+    .sidebar{width:260px;background:var(--sidebar);color:#fff;display:flex;flex-direction:column}
+    .sidebar h2{margin:0;padding:16px 16px 8px;font-size:18px}
+    .menu{padding:8px 8px 16px}
+    .menu .group{margin-top:8px}
+    .menu .group-title{opacity:.7;font-size:12px;padding:6px 10px}
+    /* buttons */
+    .menu button{width:100%;text-align:left;border:0;background:transparent;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:10px}
+    .menu button .dot{width:8px;height:8px;border-radius:50%;background:transparent}
+    .menu button.active,.menu button:hover{background:rgba(255,255,255,0.1)}
+    .menu button.active .dot{background:var(--accent)}
+    /* (kept) anchor style used elsewhere if needed */
+    .menu a{display:flex;align-items:center;gap:10px;width:100%;text-decoration:none;color:#fff;padding:10px 14px;border-radius:8px}
+    .menu a .dot{width:8px;height:8px;border-radius:50%;background:transparent}
+    .menu a:hover{background:rgba(255,255,255,0.1)}
+    .content{flex:1;overflow:auto;padding:20px}
+    .header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .header .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:16px}
+    .muted{color:var(--muted);font-size:14px}
+    .container{max-width:1400px;margin-inline:auto}
+    .thumb{width:48px;height:48px;object-fit:cover;border:1px solid #eee;border-radius:8px;background:#fafafa}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .divider{height:1px;background:#e5e7eb;margin:12px 0}
+    .input, select, textarea{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#111}
+    .btn.danger{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;font-size:14px;vertical-align:middle}
+    th{text-align:left;background:#f9fafb}
+    .nowrap{white-space:nowrap}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>Admin</h2>
+    <div class="menu">
+      <div class="group">
+        <div class="group-title">General</div>
+        <button data-screen="dashboard" class="active"><span class="dot"></span>Dashboard</button>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Catalog</div>
+        <button data-screen="inventory"><span class="dot"></span>Inventory</button>
+        <button data-screen="add"><span class="dot"></span>Add Product</button>
+        <button data-screen="amz-upload"><span class="dot"></span>Upload via Amazon</button>
+        <!-- NEW: Bulk Upload -->
+        <button data-screen="amz-bulk"><span class="dot"></span>Bulk Upload (Amazon)</button>
+        <button data-screen="categories"><span class="dot"></span>Categories</button>
+        <button data-screen="banners"><span class="dot"></span>Banners</button>
+        <button data-screen="home-sections"><span class="dot"></span>Home Page Section</button>
+        <button data-screen="coupons"><span class="dot"></span>Coupons</button>
+        <button data-screen="branding"><span class="dot"></span>Branding</button>
+        <button data-screen="header-colors"><span class="dot"></span>Header Colors</button>
+        <!-- UPDATED: Filters now opens inside the panel (like Inventory) -->
+        <button data-screen="filters"><span class="dot"></span>Filters</button>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Commerce</div>
+        <button data-screen="orders"><span class="dot"></span>Orders</button>
+        <button data-screen="customers"><span class="dot"></span>Customers</button>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Insights</div>
+        <button data-screen="analytics"><span class="dot"></span>Analytics</button>
+      </div>
+
+      <div class="group">
+        <div class="group-title">System</div>
+        <button data-screen="settings"><span class="dot"></span>Settings</button>
+        <button data-screen="card-grid"><span class="dot"></span>Card Grid</button>
+        <button data-screen="help"><span class="dot"></span>Help</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="container">
+      <div class="header">
+        <div class="dot"></div>
+        <h1 id="page-title" style="margin:0;font-size:20px">Dashboard</h1>
+        <span class="muted" id="page-sub">Overview and shortcuts</span>
+      </div>
+      <div id="page-root"></div>
+    </div>
+  </main>
+
+  <script src="/admin/js/admin-shell.js" defer></script>
+</body>
+</html>

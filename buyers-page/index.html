@@ -1,0 +1,88 @@
+<!-- File: E:\amazon-business-home\buyers-page\index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>kelenate Business – Home </title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet" />
+
+  <!-- Base styles -->
+  <link rel="stylesheet" href="/css/styles.css" />
+  <!-- Amazon-like product cards (absolute path + cache-bust to ensure the updated rules load) -->
+  <link rel="stylesheet" href="/buyers-page/css/cards.css?v=home-cols-1" />
+
+  <!-- Sidebar styles (cache-busted, absolute path so it works at / or /buyers-page) -->
+  <link rel="stylesheet" href="/buyers-page/css/side-categories.css?v=4" />
+
+  <!-- Page-local tweaks: reduce gap, set sidebar width & sticky offset -->
+  <style>
+    /* Shrink the space between sidebar and content */
+    .with-sidebar{ gap:12px; }
+    /* Slightly narrower left rail */
+    :root{ --sidebarW:210px; }
+    /* Ensure the sidebar sits just below the sticky header (adjust if your header height changes) */
+    .with-sidebar{ --stickyTop:112px; }
+
+    /* ---- fix: desktop mega menu must float above sticky header (z-index:5000) ---- */
+    /* keep this higher than .sticky-chrome (5000) and search dropdowns */
+    #megaMenu{ z-index:5200 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Shared header + subnav via include -->
+  <div data-include="/partials/header.html"></div>
+
+  <!-- PAGE LAYOUT: Sidebar (left) + Content (right) -->
+  <div class="page with-sidebar">
+    <!-- LEFT: Category sidebar -->
+    <aside class="sidecat" id="sideCategories" aria-label="Category">
+      <h3 class="sidecat__title">Category</h3>
+      <ul class="sidecat__path" id="catPath"></ul>
+      <ul class="sidecat__children" id="catChildren"></ul>
+    </aside>
+
+    <!-- RIGHT: Content column (hero + rows) -->
+    <div class="content">
+      <!-- HERO -->
+      <section class="hero" aria-label="Promotions">
+        <button class="hero__nav hero__nav--left" aria-label="Previous" id="heroPrev">❮</button>
+
+        <!-- ✅ wrapper so JS can inject Admin-uploaded banners -->
+        <div class="hero__slides">
+          <!-- fallback slide (kept) -->
+          <div class="hero__slide">
+            <div class="hero__badge">BUSINESS VALUE DAYS</div>
+            <h2 class="hero__title">Buy Big Save Bigger</h2>
+            <p class="hero__subtitle">Up to 10% instant discount* + business exclusive cashback</p>
+          </div>
+        </div>
+
+        <button class="hero__nav hero__nav--right" aria-label="Next" id="heroNext">❯</button>
+      </section>
+
+      <!-- ROWS (Home categories) -->
+      <main class="rows" aria-label="Recommendations">
+        <!-- js/main.js → rows.js will render the sections here -->
+      </main>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div>© Kelenate Business.</div>
+  </footer>
+
+  <!-- ✅ Process data-include and fire includes:ready -->
+  <script defer src="/js/boot.js"></script>
+  <!-- ✅ Wire header (dropdowns, categories, and uploaded logo swap) -->
+  <script type="module" src="/js/chrome-init.js?v=dev12"></script>
+  <!-- Page-specific logic (loads banners and renders rows) -->
+  <script type="module" src="js/main.js"></script>
+  <!-- Sidebar behavior (cache-busted) -->
+  <script type="module" src="/buyers-page/js/side-categories.js?v=4"></script>
+</body>
+</html>

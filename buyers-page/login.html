@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in • Kelenate</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Amazon-like sign-in layout */
+    body { background:#fff; }
+    .a-wrap{ max-width:350px; margin:22px auto 40px; padding:0 14px; font-family:var(--font, "Open Sans", Arial, sans-serif); color:#111; }
+    .a-logo{ display:flex; justify-content:center; margin:6px 0 14px; }
+    .a-logo img{ height:31px; object-fit:contain; }
+
+    .a-box{
+      border:1px solid #d5d9d9; border-radius:8px; padding:20px 26px;
+      box-shadow:0 1px 2px rgba(0,0,0,0.06);
+      background:#fff;
+    }
+    .a-title{ font-size:28px; font-weight:400; margin:0 0 14px; }
+    .a-label{ display:block; font-weight:700; font-size:13px; margin:8px 0 6px; }
+    .a-input{
+      width:100%; padding:7px 8px; border:1px solid #a6a6a6; border-radius:3px;
+      font-size:13px; line-height:19px; background:#fff;
+    }
+    .a-inline{ display:flex; justify-content:space-between; align-items:center; }
+    .a-link{ color:#007185; text-decoration:none; font-size:12px; }
+    .a-link:hover{ color:#c45500; text-decoration:underline; }
+
+    .a-btn{
+      width:100%; border:1px solid #fcd200; border-radius:8px; padding:8px 10px;
+      background:#ffd814; cursor:pointer; font-weight:700; font-size:13px;
+    }
+    .a-btn:hover{ background:#f7ca00; }
+    .a-btn:active{ background:#f0b800; }
+
+    .a-msg{ color:#b12704; font-size:12px; margin-top:8px; min-height:16px; }
+    .a-foot{ font-size:12px; color:#565959; margin-top:14px; }
+    .a-foot a{ color:#007185; text-decoration:none; }
+    .a-foot a:hover{ text-decoration:underline; }
+
+    .a-bottom{ margin-top:26px; text-align:center; font-size:12px; color:#565959; }
+    .a-bottom a{ color:#007185; text-decoration:none; margin:0 10px; }
+    .a-bottom a:hover{ text-decoration:underline; }
+    .a-copy{ margin-top:6px; color:#767676; }
+
+    /* hide step2 by default */
+    #step2{ display:none; }
+  </style>
+</head>
+<body>
+  <div class="a-wrap">
+    <div class="a-logo"><img id="loginLogo" alt="Kelenate" /></div>
+
+    <!-- Step 1: Identifier -->
+    <div id="step1" class="a-box">
+      <h1 class="a-title">Sign in</h1>
+
+      <label class="a-label" for="idInput">Enter mobile number or email</label>
+      <input id="idInput" class="a-input" type="text" autocomplete="username" />
+
+      <button id="btnCont" class="a-btn" style="margin-top:14px;">Continue</button>
+      <div class="a-foot">
+        By continuing, you agree to Kelenate's
+        <a href="/conditions.html">Conditions of Use</a> and
+        <a href="/privacy.html">Privacy Notice</a>.
+      </div>
+
+      <div class="a-msg" id="msg1"></div>
+    </div>
+
+    <!-- Step 2: Password (only if identifier exists) -->
+    <div id="step2" class="a-box">
+      <h1 class="a-title">Sign in</h1>
+
+      <div class="a-inline" style="margin-bottom:6px;">
+        <div id="idLabel" style="font-size:13px;"></div>
+        <a id="changeId" class="a-link" href="#">Change</a>
+      </div>
+
+      <label class="a-label" for="pwInput">Password</label>
+      <input id="pwInput" class="a-input" type="password" autocomplete="current-password" />
+      <div class="a-inline" style="margin-top:6px;">
+        <span></span>
+        <a class="a-link" href="/forgot.html">Forgot password?</a>
+      </div>
+
+      <button id="btnSignIn" class="a-btn" style="margin-top:14px;">Sign in</button>
+      <div class="a-msg" id="msg2"></div>
+    </div>
+
+    <!-- Bottom links like screenshot -->
+    <div class="a-bottom">
+      <a href="/conditions.html">Conditions of Use</a>
+      <a href="/privacy.html">Privacy Notice</a>
+      <a href="/help.html">Help</a>
+      <div class="a-copy">© 1996–2025, Kelenate (demo)</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getSiteSettings, authExists, authLoginById } from './js/api.js';
+
+    // Logo (use uploaded header logo if present)
+    getSiteSettings().then(s=>{
+      const el = document.getElementById('loginLogo');
+      if (s && s.header_logo) el.src = s.header_logo;
+      else el.style.display = 'none';
+    }).catch(()=>{});
+
+    const $ = s => document.querySelector(s);
+    const step1 = $('#step1');
+    const step2 = $('#step2');
+    const idInput = $('#idInput');
+    const pwInput = $('#pwInput');
+    const idLabel = $('#idLabel');
+    const msg1 = $('#msg1');
+    const msg2 = $('#msg2');
+
+    function showStep(n){
+      step1.style.display = n===1 ? 'block' : 'none';
+      step2.style.display = n===2 ? 'block' : 'none';
+    }
+
+    async function handleContinue(){
+      const identifier = (idInput.value || '').trim();
+      if (!identifier) { idInput.focus(); return; }
+      msg1.textContent = '';
+      try{
+        const { exists } = await authExists(identifier);
+        if (exists) {
+          idLabel.textContent = identifier;
+          showStep(2);
+          pwInput.focus();
+        } else {
+          const q = encodeURIComponent(identifier);
+          location.href = `/register.html?identifier=${q}`;
+        }
+      }catch(e){ msg1.textContent = 'Something went wrong. Try again.'; }
+    }
+
+    async function handleSignIn(){
+      const identifier = idLabel.textContent.trim();
+      const password = pwInput.value;
+      if (!password) { pwInput.focus(); return; }
+      msg2.textContent = '';
+      try{
+        await authLoginById({ identifier, password });
+        location.href = '/';
+      }catch(e){ msg2.textContent = 'Incorrect password.'; }
+    }
+
+    document.getElementById('btnCont').addEventListener('click', handleContinue);
+    document.getElementById('btnSignIn').addEventListener('click', handleSignIn);
+    document.getElementById('changeId').addEventListener('click', e => { e.preventDefault(); showStep(1); });
+
+    idInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') handleContinue(); });
+    pwInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') handleSignIn(); });
+
+    const pref = new URLSearchParams(location.search).get('identifier');
+    if (pref) {
+      idInput.value = pref;
+      idLabel.textContent = pref;
+      showStep(2);
+    }
+  </script>
+</body>
+</html>

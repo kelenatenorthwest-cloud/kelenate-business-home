@@ -1,0 +1,70 @@
+<div class="card">
+  <h3 style="margin-top:0">Bulk Upload via Amazon</h3>
+  <p class="muted" style="margin:6px 0 16px">
+    Paste ASINs (or Amazon product URLs) – one per line. Pick a single <b>Category</b> for all items. We’ll fetch each product and create it.
+  </p>
+
+  <div class="grid-3" style="align-items:end">
+    <div>
+      <label>Category (mandatory)</label>
+      <select id="amzb-category" class="input"></select>
+    </div>
+    <div>
+      <label>Marketplace</label>
+      <select id="amzb-market" class="input">
+        <option value="https://www.amazon.in">amazon.in</option>
+        <option value="https://www.amazon.com">amazon.com</option>
+        <option value="https://www.amazon.co.uk">amazon.co.uk</option>
+        <option value="https://www.amazon.de">amazon.de</option>
+      </select>
+    </div>
+    <div style="text-align:right">
+      <button id="amzb-start" class="btn primary" type="button">Fetch & Create</button>
+      <button id="amzb-stop" class="btn" type="button">Stop</button>
+      <button id="amzb-reset" class="btn" type="button">Reset</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <label>ASINs / URLs (one per line)</label>
+  <textarea id="amzb-input" class="input" rows="10" placeholder="B0BL3Z48DM
+https://www.amazon.in/gp/product/B0BL3Z48DM
+B0C123ABCD"></textarea>
+
+  <div class="divider"></div>
+
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div class="muted" id="amzb-status">Idle</div>
+    <div class="muted">•</div>
+    <div class="muted"><b>Progress:</b> <span id="amzb-count">0</span>/<span id="amzb-total">0</span></div>
+    <div class="muted">•</div>
+    <div class="muted"><b>OK:</b> <span id="amzb-ok">0</span></div>
+    <div class="muted"><b>Skipped:</b> <span id="amzb-skip">0</span></div>
+    <div class="muted"><b>Errors:</b> <span id="amzb-err">0</span></div>
+  </div>
+
+  <!-- NEW: compact progress bar (JS will set width of #amzb-progress-bar) -->
+  <div style="margin:8px 0 0">
+    <div class="progress">
+      <div class="bar" id="amzb-progress-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div style="overflow:auto">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-asin">ASIN</th>
+          <th class="col-status">Overall</th>
+          <!-- NEW: per-field live status (Title / MRP / Price / Images) -->
+          <th>Fields</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="amzb-tbody"></tbody>
+    </table>
+  </div>
+</div>

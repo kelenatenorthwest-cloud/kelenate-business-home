@@ -1,0 +1,6 @@
+{
+  "unavailable_mode": "lock",
+  "colors": [{ "name": "Red", "dot": "#ef4444" }],
+  "price_bands": [{ "label": "Under ₹500", "min": 0, "max": 500 }],
+  "discounts": [{ "label": "10% Off or more", "min": 10 }]
+}

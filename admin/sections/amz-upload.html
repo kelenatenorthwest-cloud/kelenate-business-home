@@ -1,0 +1,103 @@
+<div class="card">
+  <h3 style="margin-top:0">Upload via Amazon</h3>
+  <p class="muted" style="margin:6px 0 16px">
+    Paste an Amazon product URL. We will fetch the page, prefill the form (same fields as Add Product), and you can save.
+  </p>
+
+  <div class="grid-3" style="align-items:flex-end">
+    <div style="grid-column: span 2;">
+      <label>Amazon Product URL</label>
+      <input type="url" id="amz-url" class="input" placeholder="https://www.amazon.in/dp/ASIN..." />
+    </div>
+    <div>
+      <button class="btn primary" id="amz-fetch" type="button">Fetch</button>
+    </div>
+  </div>
+  <div id="amz-fetch-status" class="muted" style="margin-top:8px"></div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3 style="margin-top:0">Product details</h3>
+  <form id="amz-form">
+    <div class="grid-3">
+      <div>
+        <label>Title</label>
+        <input type="text" id="amz-title" class="input" />
+      </div>
+      <div>
+        <label>MRP</label>
+        <input type="number" step="0.01" id="amz-mrp" class="input" />
+      </div>
+      <div>
+        <label>Price</label>
+        <input type="number" step="0.01" id="amz-price" class="input" />
+      </div>
+
+      <div>
+        <label>SKU <span class="muted">(mandatory)</span></label>
+        <input type="text" id="amz-sku" class="input" required />
+      </div>
+      <div>
+        <label>Category <span class="muted">(mandatory)</span></label>
+        <select id="amz-category" class="input" required></select>
+      </div>
+      <div>
+        <label>MOQ</label>
+        <input type="number" id="amz-moq" class="input" min="1" value="1" />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <label>Bullet Points (up to 7)</label>
+    <div class="grid-3">
+      <input class="input" id="amz-b1" placeholder="Point 1" />
+      <input class="input" id="amz-b2" placeholder="Point 2" />
+      <input class="input" id="amz-b3" placeholder="Point 3" />
+      <input class="input" id="amz-b4" placeholder="Point 4" />
+      <input class="input" id="amz-b5" placeholder="Point 5" />
+      <input class="input" id="amz-b6" placeholder="Point 6" />
+      <input class="input" id="amz-b7" placeholder="Point 7" />
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid-2">
+      <div>
+        <label>Description (HTML or text)</label>
+        <textarea id="amz-desc" class="input" rows="6"></textarea>
+      </div>
+
+      <div>
+        <label>Images (upload)</label>
+        <input id="amz-images" class="input" type="file" accept="image/*" multiple />
+        <div class="muted" style="margin-top:6px">Or paste URLs (below)</div>
+        <div class="divider"></div>
+        <label>Images (URL, one per line or comma-separated)</label>
+        <textarea id="amz-imageUrls" class="input" rows="4"></textarea>
+
+        <div class="divider"></div>
+        <label>Video (upload)</label>
+        <input id="amz-videos" class="input" type="file" accept="video/*" multiple />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid-3">
+      <div>
+        <label>Status</label>
+        <select id="amz-status" class="input">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+      <button class="btn primary" type="submit">Save product</button>
+      <button class="btn" type="button" id="amz-reset">Reset</button>
+      <span id="amz-statusMsg" class="muted"></span>
+    </div>
+  </form>
+</div>

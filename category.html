@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Category View</title>
+  <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="logo">← Back to Home</a>
+  </header>
+
+  <main class="rows" id="categoryContent"></main>
+
+  <script>
+    const API_BASE = location.origin.startsWith("http") ? location.origin : "http://localhost:4000";
+    const params = new URLSearchParams(location.search);
+    const type = params.get("type");   // "home" or "main"
+    const value = params.get("value"); // category name
+
+    async function loadCategory() {
+      const container = document.getElementById("categoryContent");
+      container.innerHTML = `<h3>Category: ${value}</h3>`;
+
+      let products = [];
+      if (type === "main") {
+        const res = await fetch(`${API_BASE}/api/products?mainCategory=${encodeURIComponent(value)}`);
+        products = await res.json();
+      } else {
+        const res = await fetch(`${API_BASE}/api/products`);
+        const all = await res.json();
+        products = all.filter(p => Array.isArray(p.homeCategories) && p.homeCategories.includes(value));
+      }
+
+      if (!products.length) {
+        container.innerHTML += "<p>No products found.</p>";
+        return;
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "products";
+      products.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "product";
+        const img = document.createElement("div");
+        img.className = "img";
+        if (p.image) img.style.backgroundImage = `url(${API_BASE}${p.image})`;
+        card.appendChild(img);
+        card.innerHTML += `<div class="title">${p.title}</div><div class="price">₹${p.price}</div>`;
+        grid.appendChild(card);
+      });
+      container.appendChild(grid);
+    }
+
+    loadCategory();
+  </script>
+</body>
+</html>

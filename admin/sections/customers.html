@@ -1,0 +1,24 @@
+<div class="panel">
+  <h2>Customers</h2>
+  <p class="muted">Registered users</p>
+  <div style="display:flex;gap:8px;align-items:center;margin:8px 0 12px;">
+    <input id="custQ" class="input" type="search" placeholder="Search name, email or state…" style="max-width:320px;">
+    <button id="custRefresh" class="btn">Refresh</button>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th class="nowrap">ID</th>
+          <th>First</th>
+          <th>Last</th>
+          <th>Email</th>
+          <th>State</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody id="custBody"></tbody>
+    </table>
+  </div>
+</div>

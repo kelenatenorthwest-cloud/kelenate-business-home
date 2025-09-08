@@ -1,0 +1,118 @@
+{
+  "unavailable_mode": "hide",
+  "colors": [
+    {
+      "name": "Multi"
+    },
+    {
+      "name": "Red",
+      "dot": "#ef4444"
+    },
+    {
+      "name": "White",
+      "dot": "#e5e7eb"
+    },
+    {
+      "name": "Orange",
+      "dot": "#f97316"
+    },
+    {
+      "name": "Green",
+      "dot": "#22c55e"
+    },
+    {
+      "name": "Yellow",
+      "dot": "#eab308"
+    },
+    {
+      "name": "Blue",
+      "dot": "#3b82f6"
+    },
+    {
+      "name": "Black",
+      "dot": "#111827"
+    },
+    {
+      "name": "Transparent",
+      "dot": "transparent"
+    },
+    {
+      "name": "Grey",
+      "dot": "#9ca3af"
+    },
+    {
+      "name": "Pink",
+      "dot": "#ec4899"
+    },
+    {
+      "name": "Silver",
+      "dot": "#c0c0c0"
+    },
+    {
+      "name": "Gold",
+      "dot": "#d4af37"
+    },
+    {
+      "name": "Neon",
+      "dot": "#39ff14"
+    }
+  ],
+  "price_bands": [
+    {
+      "min": 0,
+      "max": 500,
+      "label": "Under ₹500"
+    },
+    {
+      "min": 500,
+      "max": 1000,
+      "label": "₹500 – ₹1000"
+    },
+    {
+      "min": 1000,
+      "max": 1500,
+      "label": "₹1000 – ₹1500"
+    },
+    {
+      "min": 1500,
+      "max": 3000,
+      "label": "₹1500 – ₹3000"
+    },
+    {
+      "min": 3000,
+      "max": null,
+      "label": "Over ₹3000"
+    },
+    {
+      "min": 0,
+      "max": 199,
+      "label": "Under ₹199"
+    }
+  ],
+  "discounts": [
+    {
+      "min": 10,
+      "label": "10% Off or more"
+    },
+    {
+      "min": 25,
+      "label": "25% Off or more"
+    },
+    {
+      "min": 35,
+      "label": "35% Off or more"
+    },
+    {
+      "min": 50,
+      "label": "50% Off or more"
+    },
+    {
+      "min": 60,
+      "label": "60% Off or more"
+    },
+    {
+      "min": 70,
+      "label": "70% Off or more"
+    }
+  ]
+}

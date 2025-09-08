@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>New Address</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    .container{max-width:820px;margin:0 auto;padding:16px}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    form .full{grid-column:1 / -1}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px}
+    .pad{padding:16px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer}
+    .btn.primary{background:#fbbf24;border-color:#d97706}
+    input,select,textarea{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:8px}
+    label{font-size:12px;color:#6b7280;margin-bottom:4px;display:block}
+  </style>
+</head>
+<body>
+  <div id="site-chrome" data-include="/partials/header.html"></div>
+
+  <main class="container">
+    <h1 style="margin:8px 0 14px;">Add a new address</h1>
+    <div class="card pad">
+      <form id="addrForm">
+        <div class="full">
+          <label>Full name</label>
+          <input name="full_name" required />
+        </div>
+        <div>
+          <label>Mobile number</label>
+          <input name="phone" />
+        </div>
+        <div>
+          <label>Pincode</label>
+          <input name="pincode" required />
+        </div>
+        <div>
+          <label>City / Town</label>
+          <input name="city" required />
+        </div>
+        <div>
+          <label>State</label>
+          <input name="state" required />
+        </div>
+        <div class="full">
+          <label>Flat, House no., Building, Company</label>
+          <input name="line1" required />
+        </div>
+        <div class="full">
+          <label>Area, Street, Sector, Village</label>
+          <input name="line2" />
+        </div>
+        <div class="full">
+          <label>Landmark (optional)</label>
+          <input name="landmark" />
+        </div>
+
+        <div class="full" style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          <a id="cancel" class="btn">Cancel</a>
+          <button class="btn primary" type="submit">Add address</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div data-include="/partials/footer.html"></div>
+
+  <script type="module" src="/js/boot.js"></script>
+  <script type="module" src="/js/chrome-init.js"></script>
+  <script type="module" src="/js/address-form.js"></script>
+</body>
+</html>

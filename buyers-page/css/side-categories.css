@@ -1,0 +1,347 @@
+/* File: E:\amazon-business-home\buyers-page\css\side-categories.css */
+
+/* ---- base ---- */
+:root{
+  --text:#111827;
+  --muted:#6b7280;
+  --divider:#d5d9d9;
+  --sidebarW:210px;
+  --stickyTop:0px; /* override per page (e.g. 112px) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; font-family:var(--font); color:var(--text); }
+
+/* ---- layout container ---- */
+.with-sidebar{
+  width:100%;
+  margin:0;
+  padding:12px 12px;                /* page gutter */
+  scrollbar-gutter: stable both-edges;
+}
+
+/* ✅ FULL-WIDTH CONTENT SAFEGUARD
+   Make sure the right column and inner wrappers can stretch to the full line. */
+.with-sidebar .content{ width:auto; min-width:0; }
+.with-sidebar .cat-wrap{ max-width:100%; width:100%; min-width:0; }
+.with-sidebar #grid{ display:block; width:100%; min-width:0; }
+
+/* Reserve space for the fixed rail ONLY when it exists */
+.with-sidebar:has(.sidecat){
+  padding-left: calc(var(--sidebarW) + 12px); /* rail width + gutter */
+}
+
+/* ---- sidebar (fixed + own scroll) ---- */
+.sidecat{
+  margin-top: 40px;
+  position: fixed;
+  top: var(--stickyTop);
+  left: 12px;
+  z-index: 1;
+
+  width: var(--sidebarW);
+  padding-right:10px;
+  background:#fff;
+
+  border-right:1px solid var(--divider);
+  box-shadow: inset -1px 0 0 var(--divider);
+
+  height: calc(100dvh - var(--stickyTop) - 12px);
+  min-height: calc(100dvh - var(--stickyTop) - 12px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidecat__title{ margin:0 0 10px 0; font-size:14px; font-weight:700; }
+.sidecat__path, .sidecat__children{ margin:0; padding:0; list-style:none; }
+.sidecat__path li{ margin:6px 0; }
+.sidecat__path a{ color:var(--text); text-decoration:none; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidecat__path a::before{ content:"‹ "; opacity:.85; }
+
+.sidecat__current{ font-weight:700; margin:6px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.sidecat__children{ padding-left:12px; margin-top:4px; }
+/* hover + active state for category links */
+.sidecat__children li{ margin:6px 0; }
+.sidecat__children a{ color:var(--text); text-decoration:none; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidecat__children a:hover{ color:#c45500; text-decoration:underline; }
+.sidecat a:focus-visible{ outline:2px solid #2563eb; outline-offset:2px; border-radius:4px; }
+.sidecat__children a[aria-current="page"],
+.sidecat__children a.is-active{
+  font-weight:700;
+  color:#c45500;          /* orange in addition to bold */
+  text-decoration:none;
+}
+
+/* ---- hover color for Price/Discount filter buttons ---- */
+.sidecat .links .filter-link{
+  color: var(--text);
+  text-decoration: none;
+}
+.sidecat .links .filter-link:hover,
+.sidecat .links .filter-link:focus-visible{
+  color: #c45500;
+  text-decoration: none;
+  outline: none;
+}
+
+/* ====================================================================== */
+/* Colour filter                                                           */
+/* - Colour visible INSIDE each checkbox even when NOT checked            */
+/* - Right-style checkmark on click                                       */
+/* - Extra swatch AFTER the label ONLY when checked (3ch gap)             */
+/* ====================================================================== */
+.sidecat .checklist label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  position:relative;
+  padding-right:0;
+  min-height:22px;
+}
+
+/* Custom colour checkboxes so colour is ALWAYS visible */
+.sidecat .checklist input[type="checkbox"][data-filter="color"]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:16px; height:16px;
+  border:1px solid #d5d9d9;
+  border-radius:3px;
+  display:inline-block;
+  position:relative;
+  background: var(--c, #ffffff);   /* filled even when not checked */
+  cursor:pointer;
+}
+
+/* Right-style tick (white by default) */
+.sidecat .checklist input[type="checkbox"][data-filter="color"]::after{
+  content:"";
+  position:absolute;
+  left:4px; top:2px;
+  width:6px; height:10px;
+  border-right:2px solid #fff;
+  border-bottom:2px solid #fff;
+  transform:rotate(45deg);
+  opacity:0;
+}
+.sidecat .checklist input[type="checkbox"][data-filter="color"]:checked::after{ opacity:1; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"]:focus-visible{
+  outline:2px solid #2563eb; outline-offset:2px;
+}
+
+/* Map values -> colour variable */
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Red"]{          --c:#dc2626; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Orange"]{       --c:#ea580c; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Green"]{        --c:#16a34a; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Yellow"]{       --c:#f59e0b; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Blue"]{         --c:#2563eb; }
+/* FIX: missing dot before .sidecat on previous line */
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Black"]{        --c:#111827; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Grey"]{         --c:#6b7280; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Pink"]{         --c:#db2777; }
+/* NEW */
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Silver"]{       --c:#9ca3af; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Gold"]{         --c:#d4af37; }
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Neon"]{         --c:#39ff14; }
+
+/* White: white box with black tick for visibility */
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="White"]{
+  --c:#ffffff;
+  background:#ffffff;
+  border:1px solid #d5d9d9;
+}
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="White"]::after{
+  border-right-color:#111;
+  border-bottom-color:#111;
+}
+
+/* Transparent: checkerboard + black tick */
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Transparent"]{
+  background:
+    linear-gradient(45deg, #dcdcdc 25%, transparent 25%) 0 0/6px 6px,
+    linear-gradient(45deg, transparent 75%, #dcdcdc 75%) 0 0/6px 6px,
+    #ffffff;
+  border:1px solid #d5d9d9;
+}
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Transparent"]::after{
+  border-right-color:#111;
+  border-bottom-color:#111;
+}
+
+/* Multi: colourful stripes (unchecked & checked) */
+.sidecat .checklist input[type="checkbox"][data-filter="color"][value="Multi"]{
+  background:
+    repeating-linear-gradient(45deg,
+      #dc2626 0 6px,      /* red */
+      #ea580c 6px 12px,   /* orange */
+      #16a34a 12px 18px,  /* green */
+      #2563eb 18px 24px,  /* blue */
+      #db2777 24px 30px   /* pink */
+    );
+  border:1px solid #d5d9d9;
+}
+
+/* Extra swatch AFTER the label content when checked (exact 3ch gap) */
+.sidecat .checklist label::after{
+  content:"";
+  display:none;
+  width:14px; height:14px;
+  border-radius:3px;
+  border:1px solid #d5d9d9;
+}
+.sidecat .checklist label:has(input[data-filter="color"]:checked)::after{
+  display:inline-block;
+  margin-left:3ch;
+}
+/* Per-colour fill for the on-checked swatch */
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Red"])::after{ background:#dc2626; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Orange"])::after{ background:#ea580c; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Green"])::after{ background:#16a34a; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Yellow"])::after{ background:#f59e0b; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Blue"])::after{ background:#2563eb; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Black"])::after{ background:#111827; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Grey"])::after{ background:#6b7280; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Pink"])::after{ background:#db2777; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="White"])::after{
+  background:#ffffff; box-shadow: inset 0 0 0 1px #d5d9d9;
+}
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Transparent"])::after{
+  background:
+    linear-gradient(45deg, #dcdcdc 25%, transparent 25%) 0 0/6px 6px,
+    linear-gradient(45deg, transparent 75%, #dcdcdc 75%) 0 0/6px 6px,
+    #ffffff;
+  box-shadow: inset 0 0 0 1px #d5d9d9;
+}
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Multi"])::after{
+  background:
+    repeating-linear-gradient(45deg,
+      #dc2626 0 6px,
+      #ea580c 6px 12px,
+      #16a34a 12px 18px,
+      #2563eb 18px 24px,
+      #db2777 24px 30px
+    );
+}
+/* NEW: right-side swatches for Silver / Gold / Neon */
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Silver"])::after{ background:#9ca3af; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Gold"])::after{   background:#d4af37; }
+.sidecat .checklist label:has(input[data-filter="color"]:checked[value="Neon"])::after{   background:#39ff14; }
+
+/* ====================================================================== */
+/* Active filter chips coloured by value (e.g., “Colour: Red ×”)          */
+/* Assumes chips have data-filter="color" and data-value="Red|..."        */
+/* ====================================================================== */
+.filters__active .chip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px; border-radius:999px; font-size:12px;
+  border:1px solid #d5d9d9; background:#f9fafb; color:#111827;
+}
+.filters__active .chip button{ border:0; background:transparent; cursor:pointer; padding:0 2px; font-size:14px; line-height:1; }
+
+/* little swatch inside each chip */
+.filters__active .chip[data-filter="color"]::before{
+  content:""; width:10px; height:10px; border-radius:2px; border:1px solid #d5d9d9;
+  margin-right:2px;
+}
+
+/* per-colour tinting (case-insensitive match with [i]) */
+.filters__active .chip[data-filter="color"][data-value="Red" i]         { background:#fee2e2; border-color:#dc2626; }
+.filters__active .chip[data-filter="color"][data-value="Orange" i]      { background:#ffedd5; border-color:#ea580c; }
+.filters__active .chip[data-filter="color"][data-value="Green" i]       { background:#dcfce7; border-color:#16a34a; }
+.filters__active .chip[data-filter="color"][data-value="Yellow" i]      { background:#fef3c7; border-color:#f59e0b; }
+.filters__active .chip[data-filter="color"][data-value="Blue" i]        { background:#dbeafe; border-color:#2563eb; }
+.filters__active .chip[data-filter="color"][data-value="Black" i]       { background:#f3f4f6; border-color:#111827; }
+.filters__active .chip[data-filter="color"][data-value="Grey" i]        { background:#e5e7eb; border-color:#6b7280; }
+.filters__active .chip[data-filter="color"][data-value="Pink" i]        { background:#fce7f3; border-color:#db2777; }
+.filters__active .chip[data-filter="color"][data-value="White" i]       { background:#ffffff; border-color:#d5d9d9; }
+.filters__active .chip[data-filter="color"][data-value="Transparent" i] {
+  background:
+    linear-gradient(45deg, #dcdcdc 25%, transparent 25%) 0 0/6px 6px,
+    linear-gradient(45deg, transparent 75%, #dcdcdc 75%) 0 0/6px 6px,
+    #ffffff;
+  border-color:#d5d9d9;
+}
+/* Multi chip (striped) */
+.filters__active .chip[data-filter="color"][data-value="Multi" i]{
+  background:
+    repeating-linear-gradient(45deg,
+      #fee2e2 0 6px,   /* light red */
+      #ffedd5 6px 12px,/* light orange */
+      #dcfce7 12px 18px,/* light green */
+      #dbeafe 18px 24px,/* light blue */
+      #fce7f3 24px 30px /* light pink */
+    );
+  border-color:#9ca3af;
+}
+
+/* NEW: chip backgrounds + borders */
+.filters__active .chip[data-filter="color"][data-value="Silver" i]{ background:#f3f4f6; border-color:#9ca3af; }
+.filters__active .chip[data-filter="color"][data-value="Gold"   i]{ background:#fff7d6; border-color:#d4af37; }
+.filters__active .chip[data-filter="color"][data-value="Neon"   i]{ background:#eaffd5; border-color:#39ff14; }
+
+/* chip swatch fill */
+.filters__active .chip[data-filter="color"][data-value="Red" i]::before         { background:#dc2626; }
+.filters__active .chip[data-filter="color"][data-value="Orange" i]::before      { background:#ea580c; }
+.filters__active .chip[data-filter="color"][data-value="Green" i]::before       { background:#16a34a; }
+.filters__active .chip[data-filter="color"][data-value="Yellow" i]::before      { background:#f59e0b; }
+.filters__active .chip[data-filter="color"][data-value="Blue" i]::before        { background:#2563eb; }
+.filters__active .chip[data-filter="color"][data-value="Black" i]::before       { background:#111827; }
+.filters__active .chip[data-filter="color"][data-value="Grey" i]::before        { background:#6b7280; }
+.filters__active .chip[data-filter="color"][data-value="Pink" i]::before        { background:#db2777; }
+.filters__active .chip[data-filter="color"][data-value="White" i]::before       { background:#ffffff; box-shadow: inset 0 0 0 1px #d5d9d9; }
+.filters__active .chip[data-filter="color"][data-value="Transparent" i]::before {
+  background:
+    linear-gradient(45deg, #dcdcdc 25%, transparent 25%) 0 0/6px 6px,
+    linear-gradient(45deg, transparent 75%, #dcdcdc 75%) 0 0/6px 6px,
+    #ffffff;
+  box-shadow: inset 0 0 0 1px #d5d9d9;
+}
+.filters__active .chip[data-filter="color"][data-value="Multi" i]::before{
+  background:
+    repeating-linear-gradient(45deg,
+      #dc2626 0 6px,#ea580c 6px 12px,#16a34a 12px 18px,#2563eb 18px 24px,#db2777 24px 30px);
+}
+/* NEW: chip swatch fills */
+.filters__active .chip[data-filter="color"][data-value="Silver" i]::before{ background:#9ca3af; }
+.filters__active .chip[data-filter="color"][data-value="Gold"   i]::before{ background:#d4af37; }
+.filters__active .chip[data-filter="color"][data-value="Neon"   i]::before{ background:#39ff14; }
+
+/* ====================================================================== */
+/* Row-wise locked state (driven by JS: adds .is-locked or disables)      */
+/* ====================================================================== */
+
+/* Color checkboxes (locked/disabled) */
+.sidecat .checklist input[type="checkbox"].is-locked,
+.sidecat .checklist input[type="checkbox"][data-filter="color"]:disabled{
+  pointer-events:none;
+}
+.sidecat .checklist label:has(input.is-locked),
+.sidecat .checklist label:has(input[disabled]){
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+/* Price/discount links (buttons) locked/disabled */
+.sidecat .links .filter-link.is-locked,
+.sidecat .links .filter-link:disabled{
+  color:#9ca3af;
+  cursor:not-allowed;
+  pointer-events:none;
+  text-decoration:none;
+}
+.sidecat .links .filter-link.is-locked:hover,
+.sidecat .links .filter-link.is-locked:focus-visible,
+.sidecat .links .filter-link:disabled:hover,
+.sidecat .links .filter-link:disabled:focus-visible{
+  color:#9ca3af;
+  outline:none;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 900px){
+  /* Ensure content uses full width and the sidebar is fully hidden */
+  .with-sidebar{ padding-left:12px !important; }
+  .with-sidebar:has(.sidecat){ padding-left:12px !important; }
+  .sidecat{ display:none !important; }
+}

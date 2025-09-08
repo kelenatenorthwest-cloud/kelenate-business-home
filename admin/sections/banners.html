@@ -1,0 +1,200 @@
+<div class="card">
+  <h3 class="section-title" style="margin-top:0">Banners</h3>
+  <p class="muted" style="margin:6px 0 16px">
+    Upload hero banner <strong>images or videos</strong> for the buyer homepage. Newest appears first.<br>
+    <span class="tiny">
+      Display rules: height is fixed at <strong>320&nbsp;px</strong> (desktop/tablet), hidden on small screens (≤520&nbsp;px).
+    </span>
+  </p>
+
+  <div class="grid-2">
+    <!-- Upload -->
+    <div>
+      <label><strong>Upload new banner</strong></label>
+      <div class="divider"></div>
+      <form id="banner-upload-form">
+        <input
+          id="banner-file"
+          class="input"
+          type="file"
+          accept="image/*,video/mp4,video/webm,video/ogg"
+          required
+        />
+        <div style="margin-top:10px;display:flex;gap:10px">
+          <button class="btn primary" type="submit">Upload</button>
+          <button class="btn" type="button" id="refresh-banners">Refresh</button>
+        </div>
+      </form>
+      <p class="muted" style="margin-top:8px">
+        <strong>Images:</strong>
+        Recommended wide ratio ~<strong>2.5:1</strong> (e.g., <strong>1920×768</strong>, 1600×640).
+        Accepted types: JPEG/PNG/WebP/GIF/AVIF. Cropping is supported for images.<br>
+        <strong>Videos:</strong>
+        Accepted types: MP4/WebM/OGG. Videos are served as-is (no server cropping).<br>
+        <strong>Max file size:</strong> <strong>64&nbsp;MB</strong> (images or videos).<br>
+        Tip: Keep important text/logo inside a safe zone (~6–8% inset).
+      </p>
+
+      <!-- === LIVE PREVIEW + CROPS (UNCHANGED FOR IMAGES) === -->
+      <div class="card" style="margin-top:16px">
+        <h4 style="margin:0 0 10px">Crop Preview (drag box to move • drag corners to resize)</h4>
+
+        <!-- Controls -->
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <div class="muted tiny">Target width:</div>
+          <strong id="bp-wlabel">1440px</strong>
+          <span class="muted tiny">(~ratio <span id="bp-ratiolabel">4.50</span>:1)</span>
+          <div style="margin-left:12px;display:flex;gap:6px;flex-wrap:wrap">
+            <button type="button" class="btn" id="bp-desktop">Desktop 1440</button>
+            <button type="button" class="btn" id="bp-laptop">Laptop 1200</button>
+            <button type="button" class="btn" id="bp-tablet">Tablet 1024</button>
+            <button type="button" class="btn" id="bp-wide">Wide 1920</button>
+            <button type="button" class="btn" id="bp-reset">Reset box</button>
+          </div>
+          <div class="muted tiny" style="margin-left:auto">
+            Small reference only; final images are rendered server-side at 320px height.
+          </div>
+        </div>
+
+        <!-- Save per preset (matches crops API) -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 8px">
+          <button type="button" class="btn" id="bp-save-desktop1440">Save Desktop 1440</button>
+          <button type="button" class="btn" id="bp-save-laptop1200">Save Laptop 1200</button>
+          <button type="button" class="btn" id="bp-save-tablet1024">Save Tablet 1024</button>
+          <button type="button" class="btn" id="bp-save-wide1920">Save Wide 1920</button>
+          <span class="muted tiny" style="margin-left:auto">
+            Select an <strong>image</strong> (right) to enable Save. (Videos cannot be cropped.)
+          </span>
+        </div>
+
+        <!-- Stage (small reference area; image fits; crop box overlays) -->
+        <div id="bp-frame" class="bp-frame" aria-label="Banner crop preview" title="Drag the crop box or its corners to adjust">
+          <img id="bp-img" alt="Banner preview" class="bp-img" />
+          <!-- overlay and handles are injected by JS -->
+        </div>
+
+        <p class="muted tiny" style="margin-top:8px">
+          This reference preview uses <code>object-fit:contain</code> so the whole image is visible. The blue box represents the exact
+          crop area that will be saved for each preset (kept at 320&nbsp;px height on the server).
+          For <strong>videos</strong>, you’ll see a playable preview instead, and the Save buttons are disabled.
+        </p>
+
+        <!-- Saved variants (populated by JS) -->
+        <div id="bp-saved" style="margin-top:12px">
+          <div style="font-weight:700;margin-bottom:6px">Saved variants</div>
+          <div class="muted tiny">No saved crops yet.</div>
+        </div>
+      </div>
+      <!-- === /LIVE PREVIEW + CROPS === -->
+
+    </div>
+
+    <!-- Existing banners -->
+    <div>
+      <label><strong>Existing banners</strong></label>
+      <div class="divider"></div>
+      <div id="banners-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3 class="section-title" style="margin-top:0">Banner Settings</h3>
+  <p class="muted" style="margin:6px 0 16px">
+    Control how banners display on the buyer homepage.
+  </p>
+
+  <form id="banner-settings-form">
+    <div class="grid-3">
+      <div>
+        <label>Auto-rotate</label>
+        <select id="bs-autoRotate" class="input">
+          <option value="1">On</option>
+          <option value="0">Off</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Interval (ms)</label>
+        <input id="bs-intervalMs" class="input" type="number" min="1000" step="100" value="5000"/>
+      </div>
+
+      <div>
+        <label>Transition</label>
+        <select id="bs-transition" class="input">
+          <option value="fade">Fade</option>
+          <option value="slide">Slide</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Transition speed (ms)</label>
+        <input id="bs-transitionMs" class="input" type="number" min="50" step="10" value="400"/>
+      </div>
+
+      <div>
+        <label>Show arrows</label>
+        <select id="bs-showArrows" class="input">
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Loop</label>
+        <select id="bs-loop" class="input">
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <button class="btn primary" type="submit">Save settings</button>
+      <span id="bs-status" class="muted"></span>
+    </div>
+  </form>
+</div>
+
+<!-- Minimal, isolated styles for crop preview (unchanged) -->
+<style>
+  /* Stage is intentionally small; JS enforces 720×280 and object-fit:contain */
+  .bp-frame{
+    position:relative;
+    height:280px;
+    width:720px;
+    max-width:100%;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px dashed #9aa6b2;
+    background:linear-gradient(135deg,#eef3f7,#e7edf3);
+    user-select:none;
+  }
+  .bp-img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:contain;
+    object-position:50% 50%;
+    pointer-events:none;
+  }
+
+  /* The crop box & handles are injected by JS; styles here as fallback */
+  #cb-box{
+    position:absolute;
+    border:2px solid #3b82f6;
+    border-radius:8px;
+    box-shadow:0 0 0 9999px rgba(0,0,0,.35);
+    background:transparent;
+    cursor:move;
+    pointer-events:auto;
+  }
+  #cb-box .cb-h{
+    position:absolute;
+    width:12px; height:12px;
+    background:#fff;
+    border:2px solid #3b82f6;
+    border-radius:50%;
+    box-shadow:0 1px 3px rgba(0,0,0,.15);
+    z-index:3;
+  }
+</style>

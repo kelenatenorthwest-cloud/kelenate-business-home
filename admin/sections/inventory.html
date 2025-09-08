@@ -1,0 +1,143 @@
+<!-- admin/sections/inventory.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/admin/css/admin.css" />
+  <!-- Inline tweaks (main styling is in /admin/css/admin.css) -->
+  <style>
+    .tabs{display:flex;gap:8px;margin:10px 0 16px}
+    .tabs button{padding:8px 12px;border:1px solid #d7d7d7;border-radius:8px;background:#fff;cursor:pointer}
+    .tabs button.active{background:#111;color:#fff;border-color:#111}
+    .nowrap{white-space:nowrap}
+    .thumb{width:56px;height:56px;object-fit:contain;background:#f3f4f6;border-radius:8px}
+    .stack{display:flex;gap:8px;align-items:center}
+    .right{display:flex;justify-content:flex-end}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    @media (max-width:900px){ .grid-3{grid-template-columns:1fr} .grid-2{grid-template-columns:1fr} }
+    table td, table th { vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+  <h1>Inventory</h1>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist" aria-label="Inventory views">
+    <button id="tabAll" class="active" role="tab" aria-selected="true">All</button>
+    <button id="tabActive" role="tab" aria-selected="false">Active</button>
+    <button id="tabInactive" role="tab" aria-selected="false">Inactive</button>
+    <button id="tabStranded" role="tab" aria-selected="false">Stranded</button>
+    <button id="tabDeleted" role="tab" aria-selected="false">Deleted</button>
+  </div>
+
+  <!-- =================== LIST PANE (All/Active/Inactive/Stranded) =================== -->
+  <div id="listPane">
+    <div class="card">
+      <h3 class="section-title">Inventory <span id="listBadge" class="muted">(All)</span></h3>
+
+      <div class="stack" style="justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="stack">
+          <input id="inv-search" class="input" placeholder="Search title / SKU…" style="min-width:240px" />
+          <select id="inv-maincat" class="input" style="min-width:160px">
+            <option value="">All main categories</option>
+          </select>
+          <select id="inv-limit" class="input" style="width:120px">
+            <option>10</option><option selected>20</option><option>50</option><option>100</option>
+          </select>
+          <button id="inv-refresh" class="btn">Refresh</button>
+        </div>
+        <div class="stack">
+          <button class="btn primary" id="btn-add">+ Add Product</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th><th>Title</th><th>SKU</th>
+            <th class="nowrap">Price</th><th>Main Category</th><th>Status</th><th>Created</th>
+            <th style="width:210px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inv-tbody">
+          <tr><td colspan="8" class="muted">Ready.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="stack" style="justify-content:space-between;margin-top:12px">
+        <div id="inv-status" class="muted" aria-live="polite">Ready.</div>
+        <div class="stack">
+          <button id="inv-prev" class="btn">Prev</button>
+          <button id="inv-next" class="btn">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== DELETED =================== -->
+  <div id="deletedPane" style="display:none">
+    <div class="card">
+      <h3 class="section-title">Deleted Products</h3>
+
+      <div class="stack" style="justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="stack">
+          <input id="del-search" class="input" placeholder="Search title / SKU…" style="min-width:240px" />
+          <select id="del-maincat" class="input" style="min-width:160px">
+            <option value="">All main categories</option>
+          </select>
+          <select id="del-limit" class="input" style="width:120px">
+            <option>10</option><option selected>20</option><option>50</option><option>100</option>
+          </select>
+          <button id="del-refresh" class="btn">Refresh</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th><th>Title</th><th>SKU</th>
+            <th class="nowrap">Price</th><th>Main Category</th><th>Status</th><th>Deleted At</th>
+            <th style="width:160px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="del-tbody">
+          <tr><td colspan="8" class="muted">Ready.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="stack" style="justify-content:space-between;margin-top:12px">
+        <div id="del-status" class="muted" aria-live="polite">Ready.</div>
+        <div class="stack">
+          <button id="del-prev" class="btn">Prev</button>
+          <button id="del-next" class="btn">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional inline editor -->
+  <div class="card" id="inv-editor" style="display:none;margin-top:16px">
+    <h3 class="section-title">Edit Product</h3>
+    <div class="grid-3">
+      <div><label class="muted">Title</label><input id="ed-title" class="input" /></div>
+      <div><label class="muted">SKU</label><input id="ed-sku" class="input" /></div>
+      <div><label class="muted">Price</label><input id="ed-price" type="number" step="0.01" class="input" /></div>
+    </div>
+    <div class="grid-2" style="margin-top:12px">
+      <div><label class="muted">Main Category</label><select id="ed-maincat" class="input"></select></div>
+      <div><label class="muted">Main Image (optional)</label><input id="ed-image" type="file" accept="image/*" class="input" /></div>
+    </div>
+    <div style="margin-top:12px"><label class="muted">Description</label><textarea id="ed-desc" class="input" rows="4"></textarea></div>
+    <div style="margin-top:12px"><label class="muted">Gallery (optional, replaces existing)</label><input id="ed-gallery" type="file" accept="image/*" class="input" multiple /></div>
+    <div class="stack" style="margin-top:12px;align-items:center"><img id="ed-thumb" class="thumb" src="" alt=""><div id="ed-gallery-count" class="muted"></div></div>
+    <div class="right" style="margin-top:12px"><button id="ed-cancel" class="btn">Cancel</button><button id="ed-save" class="btn primary">Save</button></div>
+  </div>
+
+  <!-- version param helps bust cache when we change JS -->
+  <script type="module" src="/admin/js/inventory/index.js?v=6"></script>
+</body>
+</html>

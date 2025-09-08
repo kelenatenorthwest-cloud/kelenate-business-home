@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create account • Kelenate</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Amazon-like auth layout: same as login.html */
+    body { background:#fff; }
+    .a-wrap{ max-width:350px; margin:22px auto 40px; padding:0 14px; font-family:var(--font, "Open Sans", Arial, sans-serif); color:#111; }
+    .a-logo{ display:flex; justify-content:center; margin:6px 0 14px; }
+    .a-logo img{ height:31px; object-fit:contain; }
+
+    .a-box{
+      border:1px solid #d5d9d9; border-radius:8px; padding:20px 26px;
+      box-shadow:0 1px 2px rgba(0,0,0,0.06);
+      background:#fff;
+    }
+    .a-title{ font-size:28px; font-weight:400; margin:0 0 14px; }
+    .a-label{ display:block; font-weight:700; font-size:13px; margin:8px 0 6px; }
+    .a-input{
+      width:100%; padding:7px 8px; border:1px solid #a6a6a6; border-radius:3px;
+      font-size:13px; line-height:19px; background:#fff;
+    }
+    .a-input[readonly]{
+      background:#f3f4f6; color:#555; cursor:not-allowed;
+    }
+    .a-row{ display:flex; gap:8px; }
+    .a-col{ flex:1; }
+
+    .a-btn{
+      width:100%; border:1px solid #fcd200; border-radius:8px; padding:8px 10px;
+      background:#ffd814; cursor:pointer; font-weight:700; font-size:13px;
+      margin-top:12px;
+    }
+    .a-btn:hover{ background:#f7ca00; }
+    .a-btn:active{ background:#f0b800; }
+
+    .a-foot{ font-size:12px; color:#565959; margin-top:14px; }
+    .a-foot a{ color:#007185; text-decoration:none; }
+    .a-foot a:hover{ text-decoration:underline; }
+    .a-msg{ color:#b12704; font-size:12px; margin-top:8px; min-height:16px; }
+
+    .a-bottom{ margin-top:26px; text-align:center; font-size:12px; color:#565959; }
+    .a-bottom a{ color:#007185; text-decoration:none; margin:0 10px; }
+    .a-bottom a:hover{ text-decoration:underline; }
+    .a-copy{ margin-top:6px; color:#767676; }
+
+    /* helper note under inputs */
+    .a-help{ font-size:12px; color:#6b7280; margin-top:6px; line-height:1.4; }
+  </style>
+</head>
+<body>
+  <div class="a-wrap">
+    <div class="a-logo"><img id="regLogo" alt="Kelenate" /></div>
+
+    <div class="a-box">
+      <h1 class="a-title">Create account</h1>
+
+      <div class="a-row">
+        <div class="a-col">
+          <label class="a-label" for="first">First name</label>
+          <input id="first" class="a-input" type="text" placeholder="First name" />
+        </div>
+        <div class="a-col">
+          <label class="a-label" for="last">Last name</label>
+          <input id="last" class="a-input" type="text" placeholder="(optional)" />
+        </div>
+      </div>
+
+      <label class="a-label" for="email">Email (locked)</label>
+      <input id="email" class="a-input" type="email" placeholder="you@example.com" autocomplete="email" readonly />
+
+      <label class="a-label" for="phone">Mobile</label>
+      <input id="phone" class="a-input" type="tel" placeholder="+91XXXXXXXXXX" autocomplete="tel" required />
+      <div class="a-help">We don’t send OTPs. Please enter a reachable mobile number so our delivery partner can contact you if needed.</div>
+
+      <label class="a-label" for="pass">Password</label>
+      <input id="pass" class="a-input" type="password" placeholder="Minimum 6 characters" autocomplete="new-password" />
+
+      <button id="create" class="a-btn">Create account</button>
+      <div id="msg" class="a-msg"></div>
+
+      <div class="a-foot">
+        By continuing, you agree to Kelenate's
+        <a href="/conditions.html">Conditions of Use</a> and
+        <a href="/privacy.html">Privacy Notice</a>.
+      </div>
+    </div>
+
+    <div class="a-bottom">
+      <a href="/conditions.html">Conditions of Use</a>
+      <a href="/privacy.html">Privacy Notice</a>
+      <a href="/help.html">Help</a>
+      <div class="a-copy">© 1996–2025, Kelenate (demo)</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getSiteSettings, authRegister } from './js/api.js';
+
+    // Show uploaded header logo if present
+    getSiteSettings().then(s => {
+      const el = document.getElementById('regLogo');
+      if (s && s.header_logo) el.src = s.header_logo;
+      else el.style.display = 'none';
+    }).catch(()=>{});
+
+    const $ = (s) => document.querySelector(s);
+
+    // Prefill from ?identifier= and capture ?return=
+    const qs = new URLSearchParams(location.search);
+    const ident = qs.get('identifier') || '';
+    const returnTo = qs.get('return') || '/';
+    if (ident) {
+      if (/@/.test(ident)) $('#email').value = ident;
+      else $('#phone').value = ident;
+    }
+
+    // Create account
+    $('#create').addEventListener('click', async () => {
+      const firstName = $('#first').value.trim();
+      const lastName  = $('#last').value.trim();
+      const email     = $('#email').value.trim();   // read-only, passed through if present
+      const phone     = $('#phone').value.trim();
+      const password  = $('#pass').value;
+
+      const msg = $('#msg');
+      msg.textContent = '';
+
+      // Now require: firstName, password, and phone
+      if (!firstName || !password || !phone) {
+        msg.textContent = 'First name, mobile, and password are required.';
+        return;
+      }
+      if (password.length < 6) {
+        msg.textContent = 'Password must be at least 6 characters.';
+        return;
+      }
+
+      msg.textContent = 'Creating account...';
+      try {
+        await authRegister({ firstName, lastName, email, phone, password });
+        // Successful registration logs in (cookie set by backend)
+        location.href = returnTo || '/';
+      } catch (e) {
+        // Surface backend error when available
+        let reason = '';
+        try { reason = JSON.parse(e.message)?.error || e.message; } catch { reason = e.message; }
+        msg.textContent = reason || 'Could not create account (email/phone may already be registered).';
+      }
+    });
+
+    // Enter to submit
+    ['first','last','email','phone','pass'].forEach(id=>{
+      const el = document.getElementById(id);
+      el.addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('create').click(); });
+    });
+  </script>
+</body>
+</html>

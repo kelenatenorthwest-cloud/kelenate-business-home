@@ -1,0 +1,68 @@
+/* ===== PDP Body (title, price block, icons, bullets) ===== */
+
+.crumbs{ color:#007185; font-size:12px; margin:2px 0 6px; }
+.pdp-title{ font-size:22px; font-weight:600; line-height:1.35; margin:0 0 6px; }
+
+.divider{ border-top:1px solid #e5e7eb; margin:12px 0; }
+
+.price-block .line{ display:flex; gap:8px; align-items:baseline; margin:2px 0; }
+.price-block .lbl { color:#565959; font-size:14px; min-width:70px; }
+.price-block .val { font-size:22px; font-weight:700; color:#0f1111; }
+.price-block .mrp { text-decoration:line-through; color:#565959; font-size:14px; }
+.price-block .save{ color:#007600; font-weight:600; font-size:14px; }
+.price-foot{ color:#565959; font-size:13px; }
+
+.icon-row{ display:flex; gap:28px; align-items:center; padding:10px 0; }
+.icon-item{ display:flex; align-items:center; gap:8px; white-space:nowrap; font-size:13px; }
+.icon-item .material-symbols-outlined{ font-size:20px; color:#0f1111; }
+
+.bullets{ margin:6px 0 10px; padding-left:18px; }
+.bullets li{ margin:4px 0; }
+.pdp-desc{ color:#565959; font-size:13px; white-space:pre-wrap; }
+
+/* remove any left indent on body column */
+.pdp-leftgrid > section + section,
+.pdp-leftgrid > [data-include*="pdp-body"]{
+  margin-left:0 !important; padding-left:0 !important;
+}
+.crumbs, .pdp-title{ margin-left:0 !important; }
+
+/* responsive body stack (mirrors layout split) */
+@media (max-width:1100px){
+  .pdp-grid{ grid-template-columns:1fr; gap:14px; }
+  .pdp-leftgrid{ grid-template-columns:1fr; gap:12px; }
+}
+
+/* ============================
+   MOBILE WRAP FIXES (<= 768px)
+   - Force wrapping for title, bullets, desc
+   - Allow icon items to wrap (undo nowrap)
+   ============================ */
+@media (max-width: 768px){
+  .pdp-title{
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    line-height: 1.28 !important;
+  }
+
+  .bullets,
+  .bullets li,
+  .pdp-desc{
+    white-space: normal !important;        /* override pre-wrap on mobile */
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    line-height: 1.38 !important;
+  }
+
+  .icon-row{
+    flex-wrap: wrap !important;
+    gap: 12px 16px !important;
+  }
+
+  .icon-item{
+    white-space: normal !important;         /* allow wrapping on small screens */
+  }
+
+  .divider{ margin:10px 0 !important; }
+}

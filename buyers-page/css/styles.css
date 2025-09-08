@@ -1,0 +1,488 @@
+:root{
+  --header:#131921;
+  --nav:#232f3e;
+  --card:#ffffff;
+  --bg:#e3e6e6;
+  --text:#0f1111;
+  --muted:#6b7280;
+  --accent:#ff9900;      /* Amazon orange */
+  --link:#007185;        /* Amazon teal link */
+  --blue:#2ea7d1;        /* banner blue */
+  --font:"Amazon Ember","Open Sans",Arial,Helvetica,sans-serif;
+
+  /* NEW: text color variables set by JS (fallbacks provided) */
+  --headerText:#ffffff;
+  --navText:#ffffff;
+  --headerTextSmall: var(--headerText);
+  --headerTextStrong: var(--headerText);
+}
+
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;font-family:var(--font);color:var(--text);
+  background:var(--bg);
+  background:#fff !important;
+  /* prevent layout jump when scrollbar appears */
+  scrollbar-gutter: stable both-edges;
+}
+a{color:var(--link);text-decoration:none}
+a:hover{color:#004b59;text-decoration:underline}
+strong,.strong{font-weight:700}
+.tiny{font-size:.75rem;line-height:1}
+.muted{color:var(--muted)}
+.price{color:#0f7; color:#0f0f0f}
+.price.big{font-size:1.75rem;font-weight:700}
+.number{font-size:1.4rem;font-weight:700}
+
+/* -------- STICKY WRAPPER (owns the stickiness for header + subnav) -------- */
+.sticky-chrome{ position:sticky; top:0; z-index:5000; }
+
+/* -------- HEADER -------- */
+.header{
+  display:grid;
+  grid-template-columns: 1fr minmax(420px, 760px) 1fr;
+  gap:12px;
+  align-items:center;
+  padding:8px 12px;
+  background:var(--header);
+  color:var(--headerText);
+  position:relative; /* stickiness handled by .sticky-chrome */
+  /* allow shrink in grid for mid-widths */
+  min-width:0;
+}
+
+/* make header children inherit the dynamic text color */
+.header a,
+.header .lang,
+.header .account,
+.header .orders,
+.header .cart,
+.header .location,
+.header .material-symbols-outlined{
+  color:var(--headerText);
+}
+
+/* Per-line overrides inside the top bar */
+.header .tiny   { color: var(--headerTextSmall,  var(--headerText)); }
+.header .strong { color: var(--headerTextStrong, var(--headerText)); }
+
+.header__left,.header__right{display:flex;align-items:center;gap:10px; min-width:0;}
+.logo{display:flex;align-items:center;gap:6px;color:var(--headerText);font-weight:700;font-size:1.35rem;text-decoration:none;white-space:nowrap;min-width:0}
+.logo__amazon{text-transform:lowercase;letter-spacing:.2px}
+.logo__smile{width:26px;height:8px;border:3px solid var(--accent);border-top:none;border-radius:0 0 20px 20px;display:inline-block;margin:0 2px 6px 0}
+.logo__business{font-weight:600;opacity:.95}
+
+/* NEW: image logo support */
+.logo__img{
+  height:28px;
+  max-width:220px;
+  display:none;
+  object-fit:contain;
+}
+/* Optional helper: if you add class="logo logo--imgActive" via JS, hide text logo */
+.logo--imgActive .logo__amazon,
+.logo--imgActive .logo__smile,
+.logo--imgActive .logo__business{ display:none; }
+
+.location{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;border:1px solid transparent}
+.location__text{display:flex;flex-direction:column;line-height:1.2}
+.location .strong{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+
+/* Small icon button used for mobile hamburger & similar */
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:8px;
+  border:0;background:transparent;color:var(--headerText);cursor:pointer;
+}
+.icon-btn:hover{ background:#ffffff22; }
+.m-ham{ display:none; }               /* hidden by default (desktop) */
+.account-ico{ display:none; }         /* shown on mobile */
+
+/* SEARCH */
+.search{
+  display:grid;grid-template-columns: 110px 1fr 56px; align-items:stretch;
+  position:relative; /* for dropdown positioning */
+  overflow:visible;
+  min-width:0; /* allow shrink */
+}
+.search__all{background:#e6e6e6;border:1px solid #c3c3c3;border-right:none;border-radius:6px 0 0 6px;padding:0 10px;font-weight:600;cursor:pointer}
+.search__input{border:1px solid #c3c3c3;border-left:none;border-right:none;padding:10px 12px;font-size:1rem; color:initial;}
+.search__submit{background:var(--accent);border:none;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.search__submit .material-symbols-outlined{font-size:24px}
+.tiny-ico{font-size:18px;vertical-align:middle}
+
+/* DROPDOWNS (shared styles) */
+.menu-panel{
+  position:absolute;
+  left:0; top:44px;
+  min-width:260px;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:8px;
+  box-shadow:0 10px 24px rgba(0,0,0,.15);
+  z-index:1000;
+
+  /* smooth open/close */
+  visibility:hidden; opacity:0; transform:translateY(6px);
+  pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease, visibility 0s linear .15s;
+}
+.menu-panel.is-open{
+  visibility:visible; opacity:1; transform:translateY(0);
+  pointer-events:auto;
+  transition:opacity .15s ease, transform .15s ease, visibility 0s;
+}
+.menu-panel ul{list-style:none;margin:0;padding:6px 0}
+.menu-panel li a{display:block;padding:10px 14px;color:var(--text);text-decoration:none}
+.menu-panel li a:hover{background:#f6f7f7}
+
+/* Right/left variants */
+.dropdown--right{left:auto; right:0}
+.mega-anchor{ position:relative; } /* local positioning for mega menu */
+
+/* bump the mobile mega menu slightly above other popups */
+#mMegaMenu{ z-index:2100; }
+
+/* RIGHT HEADER ITEMS */
+.lang{background:transparent;border:none;color:var(--headerText);font-weight:700;cursor:pointer}
+.account{color:var(--headerText);cursor:pointer;position:relative;padding:4px 8px;border-radius:4px;display:flex;align-items:center;gap:6px}
+.account:hover{outline:1px solid #ffffff33}
+.orders{color:var(--headerText);text-decoration:none}
+.cart{display:flex;align-items:center;gap:4px;color:var(--headerText);text-decoration:none;position:relative}
+.cart__count{position:absolute;top:-6px;left:10px;background:var(--accent);color:#111;font-weight:700;border-radius:999px;font-size:.75rem;line-height:1;padding:2px 6px}
+
+/* -------- SUB NAV -------- */
+.subnav {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--nav);
+  color:var(--navText);
+  padding:8px 12px;
+  white-space:nowrap;
+  overflow:visible;
+  position:relative;
+  z-index:1000;
+}
+.subnav a {
+  color:var(--navText);
+  text-decoration:none;
+  font-size:.95rem;
+}
+.subnav a:hover { text-decoration:underline; }
+.subnav .material-symbols-outlined { color:var(--navText); }
+.subnav__all {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:#fff1;
+  border:1px solid #ffffff33;
+  color:var(--navText);
+  border-radius:4px;
+  padding:6px 10px;
+  cursor:pointer;
+}
+.subnav__right {
+  margin-left:auto;
+  display:flex;
+  gap:14px;
+}
+.subnav .muted { opacity:.75; }
+
+/* NEW: inline category rail next to Home */
+.subnav__cats{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.subnav__cats a{
+  color:var(--navText);
+  text-decoration:none;
+  padding:4px 6px;
+  border-radius:4px;
+}
+.subnav__cats a:hover{
+  background:#ffffff1a;
+  text-decoration:none;
+}
+
+/* -------- HERO -------- */
+.hero{
+  position:relative;
+  width:100%;
+  aspect-ratio: var(--hero-ar, 21/9);
+  margin:12px;
+  border-radius:12px;
+  background: radial-gradient(1200px 360px at 70% 10%, #bae8ff 0, #89d3ef 35%, #66c1e3 60%, #4db5dd 75%, #39a8d5 100%);
+  overflow:hidden;
+}
+
+/* slide wrapper fills the hero */
+.hero__slides{
+  position:relative;
+  width:100%;
+  height:100%;
+}
+
+/* each slide fills the frame */
+.hero__slide{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:#073b4c; text-align:center;
+  width:100%; height:100%;
+}
+
+/* if a slide uses an <img>, make it cover without overflow */
+.hero__slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* nav arrows: make sure they sit above slides */
+.hero__nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:#ffffffcc;border:none;border-radius:999px;width:40px;height:40px;cursor:pointer;
+  z-index:10;
+}
+.hero__nav--left{left:10px}
+.hero__nav--right{right:10px}
+
+/* -------- ROWS / PRODUCTS -------- */
+.rows{display:flex;flex-direction:column;gap:14px;margin:12px}
+.row h3{margin:0 0 10px 4px}
+
+/* ✅ FULL-WIDTH GRID SAFEGUARD
+   Ensure row/grid wrappers stretch to the full line, even if a global .row uses flex. */
+#grid{ display:block; width:100%; min-width:0; }
+.row.amazon-row{ display:block; width:100%; }
+.row.amazon-row .products{ width:100%; flex:1 1 auto; }
+/* Also make sure the content column in the sidebar layout can shrink properly */
+.page.with-sidebar .content{ min-width:0; }
+
+/* ⬇️ Base grid now variable-driven; JS/CSS can set --cols or inline style can override */
+.products{
+  display:grid;
+  gap:12px;
+  min-width:0;
+  grid-template-columns: repeat(var(--cols, 5), 1fr);
+}
+
+.product{background:#fff;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.product .img{height:140px;border-radius:8px;background:linear-gradient(145deg,#ececec,#d8d8d8)}
+.product .img.grid-dots{
+  background-image: radial-gradient(#111 1px, transparent 1px);
+  background-size: 10px 10px; background-color:#e7e7e7;
+}
+.product .title{font-size:.93rem;min-height:36px}
+.product .price{color:#b12704;font-weight:700}
+
+/* -------- FOOTER -------- */
+.footer{margin:30px 0 40px;color:#4b5563;text-align:center}
+
+/* -------- RESPONSIVE -------- */
+/* ⬇️ Scope generic fallbacks away from dedicated grids to avoid overriding Admin/inline settings */
+@media (max-width: 1200px){
+  .products:not(.home-products):not(.category-products):not(.search-products){
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 800px){
+  .products:not(.home-products):not(.category-products):not(.search-products){
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ✅ MOBILE LAYOUT */
+@media (max-width: 640px){
+  /* Two-row header: row1 = left/right, row2 = search */
+  .header{
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "left right"
+      "search search";
+    row-gap: 6px;
+  }
+  .header__left{ grid-area: left; }
+  .header__right{ grid-area: right; justify-content:flex-end; gap:8px; }
+  .search{ grid-area: search; grid-template-columns: 1fr 52px; } /* input + go */
+  .search__all{ display:none; } /* hide “All” dropdown on mobile */
+
+  /* Show mobile hamburger, compact account with icon, hide big label */
+  .m-ham{ display:flex; align-items:center; }
+  .account-ico{ display:inline-flex; }
+  .account .strong{ display:none; }      /* hide “Account & Lists” */
+  .cart .strong{ display:none; }         /* hide “Cart” text, keep icon + badge */
+
+  /* Hide bulky items on mobile */
+  .lang, .orders, .location{ display:none !important; }
+
+  /* Hide desktop subnav entirely */
+  .subnav{ display:none; }
+}
+
+@media (max-width: 520px){
+  .products:not(.home-products):not(.category-products):not(.search-products){
+    grid-template-columns: 1fr;
+  }
+  .hero{ display:none; }                 /* hide banner on small devices */
+}
+
+/* ---------- NEW: TABLET / SMALL-LAPTOP BAND (641–1240px) ---------- */
+@media (min-width: 641px) and (max-width: 1240px){
+  /* Two-row header: row1 = left/right, row2 = full-width search */
+  .header{
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "left right"
+      "search search";
+    row-gap: 8px;
+    padding:8px 10px;
+  }
+  .header__left{ grid-area: left; min-width:0; }
+  .header__right{ grid-area: right; justify-content:flex-end; gap:8px; min-width:0; }
+  .search{
+    grid-area: search;
+    grid-template-columns: 1fr 56px;    /* input + submit */
+  }
+  .search__all{ display:none; }         /* free up space on this band */
+
+  /* Compact right actions */
+  .orders{ display:none; }              /* fold into account (UX) */
+  .cart .strong{ display:none; }        /* icon + badge only */
+  .lang{ display:none; }                /* optional; frees space */
+
+  /* Shorter address preview to avoid push-out */
+  .location .strong{ max-width: 160px; }
+
+  /* Slightly tighter gaps */
+  .header__left, .header__right{ gap:8px; }
+
+  /* Keep the subnav to one line with horizontal scroll */
+  .subnav{
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+  .subnav__cats{
+    flex-wrap: nowrap;
+  }
+}
+
+/* clickable section headings */
+.homecat-link { text-decoration: none; color: inherit; cursor: pointer; }
+.homecat-link:hover { text-decoration: underline; }
+
+/* Keep hamburger (mega) and search dropdowns in front without overriding base styles */
+#allMenu { z-index: 2000; }            /* search “All” dropdown */
+#megaMenu { z-index: 5200; }           /* desktop hamburger mega (above .sticky-chrome 5000) */
+
+/* If your search dropdown relies on display toggling via .is-open: */
+#allMenu.is-open { display: block; }
+
+/* Make sure these parents are positioning contexts (no visual change) */
+.search { position: relative; }
+.mega-anchor { position: relative; }
+
+/* Header search suggestions (autocomplete) */
+#searchSuggest{ z-index:2200; }
+#searchSuggest ul{ max-height:380px; overflow:auto; }
+#searchSuggest a.is-active{ background:#f6f7f7; }
+#searchSuggest img{ background:#fafafa; }
+
+/* =========================================
+   MOBILE PDP SCROLLER SAFEGUARD (<= 768px)
+   Ensures the main image box scrolls vertically on phones,
+   regardless of other stylesheet order.
+   ========================================= */
+@media (max-width: 768px){
+  /* Force gallery to be block-level and full width */
+  .pdp-gallery{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+  }
+  /* Hide thumbs on phones */
+  .pdp-thumbs{ display:none !important; }
+
+  /* Make the main image container the vertical scroller */
+  #pdpMainWrap{
+    display:block !important;
+    height: var(--pdp-frame-h, clamp(320px, 62vw, 460px)) !important; /* <-- use frame var */
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-y !important;
+    overscroll-behavior:contain !important;
+    scrollbar-gutter: stable both-edges;
+    background:#fff !important;
+    border:1px solid #d5d9d9 !important;
+    border-radius:12px !important;
+    box-shadow:0 2px 10px rgba(15,17,17,.06);
+  }
+
+  /* IMPORTANT:
+     Scope fallback media rules to direct children only,
+     so #pdpStack img keeps its fixed frame height. */
+  #pdpMainWrap > img,
+  #pdpMainWrap > video{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    object-fit:contain !important;
+  }
+
+  /* Stacked scroller support */
+  #pdpStack{ display:block !important; margin:0 !important; padding:0 !important; }
+  #pdpStack img{
+    display:block !important;
+    width:100% !important;
+    height: var(--pdp-frame-h, auto) !important; /* fixed frame per image */
+    max-width:100% !important;
+    max-height:none !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+  }
+
+  /* Usually keep video hidden on phones unless required */
+  #pdpMainWrap > video{ display:none !important; }
+}
+
+/* =========================================================
+   📱 CART MOBILE LAYOUT OVERRIDES (<= 640px only)
+   - Clamp title to 2 lines
+   - Price on the next line (under the title)
+   - Desktop/tablet unaffected
+   ========================================================= */
+@media (max-width: 640px){
+  /* Stack the header row inside each cart item so price drops below title */
+  .cart-list .row.jc-between.ai-start{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  /* Title: clamp to exactly two lines with ellipsis */
+  .cart-list .item-title{
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.28;
+  }
+
+  /* Price: full-width on its own line below the title */
+  .cart-list .item-price{
+    align-self: flex-start;
+    margin-top: 2px;
+    font-weight: 700;
+  }
+}
+
+
+/* readable text inside the desktop mega menu panel */
+.subnav .menu-panel,
+.subnav .menu-panel * { color: var(--text) !important; }

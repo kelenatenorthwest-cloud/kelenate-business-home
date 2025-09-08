@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Category Sidebar Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Use absolute paths so it works whether you load from /buyers-page/... or the root alias -->
+  <link rel="stylesheet" href="/buyers-page/css/side-categories.css" />
+</head>
+<body>
+
+  <!-- Page wrapper: sidebar + content -->
+  <div class="page with-sidebar">
+    <!-- LEFT: Category sidebar -->
+    <aside class="sidecat" id="sideCategories" aria-label="Category">
+      <h3 class="sidecat__title">Category</h3>
+      <!-- ancestors / parent chain -->
+      <ul class="sidecat__path" id="catPath"></ul>
+      <!-- current category (bold) is appended to the path list -->
+      <!-- children of current -->
+      <ul class="sidecat__children" id="catChildren"></ul>
+    </aside>
+
+    <!-- RIGHT: your page content placeholder -->
+    <main class="content">
+      <h1>Car Door Shock Absorber</h1>
+      <p>This area represents your product grid/right content.</p>
+      <p>
+        Tip: To simulate deep navigation, open with a query parameter, e.g.<br>
+        <code>?value=Protective%20%26%20Decorative%20Strips</code>
+      </p>
+    </main>
+  </div>
+
+  <script type="module" src="/buyers-page/js/side-categories.js"></script>
+</body>
+</html>

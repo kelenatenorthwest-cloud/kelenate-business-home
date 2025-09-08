@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure checkout</title>
+
+  <!-- Performance preconnects (safe; helps TLS+DNS for 3P allowed by CSP) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://checkout.razorpay.com">
+  <link rel="preconnect" href="https://api.razorpay.com">
+
+  <!-- Fonts & base styles you already use -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    :root{ --ink:#0f1111; --muted:#6b7280; --border:#e5e7eb; --card:#fff; --accent:#ffd814; --accentText:#111; --bg:#f8fafc; }
+    html,body{ background:#fff; }
+    body{ font-family:"Open Sans", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; color:var(--ink); }
+
+    /* Header: logo left, title centered */
+    .checkout-header{
+      position:sticky; top:0; z-index:20;
+      display:grid; grid-template-columns: 1fr auto 1fr; align-items:center;
+      gap:18px; padding:12px 18px; background:#131921; color:#fff;
+    }
+    .checkout-header .brand{ justify-self:start; display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; }
+    .checkout-header img{ height:28px; display:block; }
+    .checkout-header .center-title{ justify-self:center; font-weight:700; font-size:18px; opacity:.95; }
+    .checkout-header .hdr-spacer{ justify-self:end; } /* keeps the title truly centered */
+
+    .checkout-container{ max-width:1180px; margin:16px auto; padding:0 18px; display:grid; grid-template-columns: minmax(0,1fr) 360px; gap:18px; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+    .section{ padding:18px; }
+    .section + .section{ margin-top:16px; }
+    .sec-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .sec-head h2{ font-size:16px; font-weight:700; margin:0; }
+    .link-btn{ border:none; background:none; color:#2563eb; font-weight:600; cursor:pointer; }
+    .muted{ color:var(--muted); }
+    .addr-block{ line-height:1.45; overflow-wrap:anywhere; word-break:break-word; }
+    .addr-name{ font-weight:700; }
+    .gst{ margin-top:8px; color:var(--muted); font-size:13px; overflow-wrap:anywhere; word-break:break-word; }
+
+    .summary{ padding:16px; position:sticky; top:70px; }
+    .summary .line{ display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
+    .summary .total{ display:flex; justify-content:space-between; padding-top:10px; margin-top:10px; border-top:1px dashed var(--border); font-weight:700; font-size:16px; }
+
+    .pay-card{ padding:16px; }
+    .pay-cta{
+      width:100%; padding:12px 14px; border-radius:999px; font-size:15px; font-weight:700; cursor:pointer;
+      border:1px solid #ca8a04; background:linear-gradient(#ffe87a,#ffd814); color:#111;
+    }
+    .pay-cta[disabled]{ opacity:.6; cursor:not-allowed; }
+
+    /* Fallback address chooser modal (used only if your existing popup isn’t found) */
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:50; }
+    .overlay.open{ display:flex; }
+    .modal{ width:min(720px,92vw); background:#fff; border-radius:12px; border:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    .modal .hd{ padding:14px 16px; border-bottom:1px solid var(--border); font-weight:700; }
+    .modal .bd{ max-height:60vh; overflow:auto; padding:10px 16px; }
+    .modal .ft{ padding:12px 16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+    .addr-row{ display:flex; gap:10px; padding:10px 0; border-bottom:1px dashed var(--border); }
+    .btn{ background:#111827; color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    .btn.muted{ background:#6b7280; }
+
+    /* ---------- Responsive: tablets ---------- */
+    @media (max-width: 1024px){
+      .checkout-container{ grid-template-columns: 1fr; }
+      .summary{ position:static; margin-top:12px; }
+    }
+
+    /* ---------- Responsive: phones ---------- */
+    @media (max-width: 768px){
+      .checkout-header{ gap:10px; padding:10px 12px; }
+      .checkout-header img{ height:24px; }
+      .checkout-header .center-title{ font-size:16px; }
+
+      .checkout-container{ padding:0 12px; gap:12px; }
+      .section{ padding:14px; }
+      .pay-card{ padding:14px; }
+      .summary{ padding:14px; }
+
+      .sec-head{ gap:8px; }
+      .sec-head h2{ font-size:15px; }
+      .link-btn{ font-size:14px; }
+
+      .pay-cta{ padding:12px 14px; font-size:15px; }
+
+      /* make long lines comfortable on narrow screens */
+      .addr-block, .gst{ font-size:14px; }
+    }
+
+    /* Small screens: keep center title readable */
+    @media (max-width: 480px){
+      .checkout-header img{ height:22px; }
+      .checkout-header .center-title{ font-size:15px; }
+      .pay-cta{ padding:12px 12px; font-size:14.5px; }
+      .summary .line{ font-size:13.5px; }
+      .summary .total{ font-size:15px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="checkout-header">
+    <!-- Your logo file should be at: server/public/img/your-logo.png -->
+    <a class="brand" href="/">
+      <img src="/img/your-logo.png" alt="Kelenate" loading="lazy" />
+    </a>
+    <div class="center-title">Secure checkout</div>
+    <div class="hdr-spacer"></div>
+  </header>
+
+  <noscript>
+    <div style="background:#fff7ed;color:#7c2d12;border:1px solid #fed7aa;padding:12px 16px;margin:12px 18px;border-radius:8px;">
+      JavaScript is required for checkout. Please enable it to continue.
+    </div>
+  </noscript>
+
+  <main class="checkout-container">
+    <section>
+      <!-- Address -->
+      <div class="card section">
+        <div class="sec-head">
+          <h2>Delivering to <span id="addrName" class="addr-name">—</span></h2>
+          <button id="changeAddressBtn" class="link-btn">Change</button>
+        </div>
+        <div id="addrBlock" class="addr-block muted" aria-live="polite">Loading default address…</div>
+
+        <div style="margin-top:14px;">
+          <div class="muted" style="font-weight:700; margin-bottom:6px;">Invoice Billing Address</div>
+          <div id="invoiceBlock" class="addr-block" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="card pay-card section">
+        <div class="sec-head"><h2>Payment</h2></div>
+        <button id="payBtn" class="pay-cta" disabled>Proceed to payment</button>
+        <div class="muted" style="font-size:12px;margin-top:6px;">Razorpay checkout opens on the next step.</div>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <aside>
+      <div class="card summary" aria-live="polite">
+        <div class="line"><span>Items:</span><span id="itemsVal">₹0.00</span></div>
+        <div class="line"><span>Delivery:</span><span>₹0.00</span></div>
+        <div class="total"><span>Order Total:</span><span id="orderTotal">₹0.00</span></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Fallback address chooser modal (only used if your existing popup isn’t present) -->
+  <div id="addrOverlay" class="overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addrModalTitle">
+      <div class="hd" id="addrModalTitle">Choose a delivery address</div>
+      <div class="bd" id="addrList"></div>
+      <div class="ft">
+        <button class="btn muted" id="addrCancel">Cancel</button>
+        <button class="btn" id="addrUse">Use Address</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="section" style="border-top:1px solid var(--border); margin-top:18px;">
+    <div class="muted">© Kelenate.</div>
+  </footer>
+
+  <!-- Your site bootstrap & header/category wiring -->
+  <script defer src="/js/boot.js"></script>
+  <script type="module" src="/js/chrome-init.js?v=dev12"></script>
+
+  <!-- Razorpay (allowed by server CSP; no inline JS used) -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- Page logic -->
+  <script type="module" src="/js/checkout.js"></script>
+</body>
+</html>

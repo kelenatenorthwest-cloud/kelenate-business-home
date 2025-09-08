@@ -1,0 +1,123 @@
+<!-- fragments/header.html -->
+<!-- HEADER TOP BAR -->
+<header class="header">
+  <div class="header__left">
+    <a class="logo" href="/" aria-label="Kelenate Business Home">
+      <span class="logo__amazon">Kelenate</span><span class="logo__smile" aria-hidden="true"></span>
+      <span class="logo__business">business</span>
+    </a>
+
+    <button class="location" aria-label="Delivery location" type="button">
+      <span class="material-symbols-outlined">location_on</span>
+      <div class="location__text">
+        <span class="tiny">Deliver to</span>
+        <span class="strong">Salra</span>
+        <span class="tiny">New Delhi 110052</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- SEARCH with “All” dropdown -->
+  <form class="search" role="search" onsubmit="return false;">
+    <button
+      class="search__all"
+      id="btnAll"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls="allMenu"
+      type="button"
+    >
+      All <span class="material-symbols-outlined tiny-ico">expand_more</span>
+    </button>
+
+    <input class="search__input" type="text" placeholder="Search Kelenate Business" />
+
+    <button class="search__submit" id="btnSearch" aria-label="Search" type="button">
+      <span class="material-symbols-outlined">search</span>
+    </button>
+
+    <!-- Search “All” dropdown (filled by JS; now with safe fallback items for desktop) -->
+    <nav class="dropdown menu-panel" id="allMenu" aria-label="Departments" role="menu">
+      <ul>
+        <!-- Fallback content: JS may overwrite/replace this -->
+        <li role="menuitem"><a href="#">All Departments</a></li>
+        <li role="menuitem"><a href="#">Automotive &amp; Car Care</a></li>
+        <li role="menuitem"><a href="#">Office Products</a></li>
+        <li role="menuitem"><a href="#">Electronics &amp; Accessories</a></li>
+        <li role="menuitem"><a href="#">Industrial &amp; Scientific</a></li>
+        <li role="menuitem"><a href="#">Home Improvement</a></li>
+        <li role="menuitem"><a href="#">Health &amp; Household</a></li>
+        <li role="menuitem"><a href="#">Tools &amp; Hardware</a></li>
+        <li role="menuitem"><a href="#">Computers &amp; IT</a></li>
+        <li role="menuitem"><a href="#">Safety &amp; PPE</a></li>
+      </ul>
+    </nav>
+  </form>
+
+  <div class="header__right">
+    <button class="lang" type="button">EN <span class="material-symbols-outlined tiny-ico">expand_more</span></button>
+
+    <div class="account" aria-haspopup="true" aria-expanded="false" id="accountBtn">
+      <div class="tiny">Hello, Salra</div>
+      <div class="strong">Account &amp; Lists</div>
+    </div>
+
+    <a class="orders" href="#">
+      <div class="tiny">Returns</div>
+      <div class="strong">&amp; Orders</div>
+    </a>
+
+    <a class="cart" href="#" aria-label="Cart">
+      <span class="cart__count" id="cartCount">1</span>
+      <span class="material-symbols-outlined">shopping_cart</span>
+      <span class="strong">Cart</span>
+    </a>
+  </div>
+</header>
+
+<!-- SECONDARY NAV with hamburger “All” mega menu -->
+<nav class="subnav" aria-label="Secondary">
+  <div class="mega-anchor">
+    <button
+      class="subnav__all"
+      id="hamburger"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls="megaMenu"
+    >
+      <span class="material-symbols-outlined">menu</span> All
+    </button>
+
+    <!-- Mega menu (filled by JS; now with safe fallback items for desktop hover) -->
+    <nav class="dropdown menu-panel dropdown--left" id="megaMenu" aria-label="Mega Menu" role="menu">
+      <ul>
+        <!-- Fallback content: JS may overwrite/replace this -->
+        <li role="menuitem"><a href="#">Deals &amp; Offers</a></li>
+        <li role="menuitem"><a href="#">Best Sellers</a></li>
+        <li role="menuitem"><a href="#">New Arrivals</a></li>
+        <li role="menuitem"><a href="#">Business-Only Pricing</a></li>
+        <li role="menuitem"><a href="#">Bulk &amp; Quantity Discounts</a></li>
+        <li role="menuitem"><a href="#">Industrial &amp; Scientific</a></li>
+        <li role="menuitem"><a href="#">Office &amp; Stationery</a></li>
+        <li role="menuitem"><a href="#">Automotive</a></li>
+        <li role="menuitem"><a href="#">Tools &amp; Hardware</a></li>
+        <li role="menuitem"><a href="#">Computers &amp; Accessories</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <a href="#">Buy Again</a>
+  <a href="#">Today’s Deals</a>
+  <a href="#">Business Deals</a>
+  <a href="#">Quantity Discounts</a>
+  <a href="#">Savings Hub</a>
+  <a href="#">Add team</a>
+
+  <div class="subnav__right">
+    <a class="muted" href="#">Deals like never before</a>
+    <a class="muted" href="#">Shop now</a>
+    <a href="#">Lists</a>
+    <a href="#">Join Prime</a>
+  </div>
+</nav>

@@ -1,0 +1,16 @@
+<section class="pdp-gallery" style="grid-template-columns:46px 1fr; column-gap:0; gap:0">
+  <div class="pdp-thumbs" id="pdpThumbs" aria-label="Thumbnails"></div>
+
+  <!-- Make the main media wrap a true vertical scroller on mobile -->
+  <div
+    class="pdp-main"
+    id="pdpMainWrap"
+    role="region"
+    aria-label="Product media"
+    tabindex="0"
+    style="overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; touch-action:pan-y;"
+  >
+    <img id="pdpMainImg" alt="Product image" />
+    <video id="pdpMainVideo" controls style="display:none" playsinline webkit-playsinline preload="metadata"></video>
+  </div>
+</section>

@@ -1,0 +1,182 @@
+<!-- File: E:\amazon-business-home\buyers-page\category.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Category • Kelenate Business</title>
+
+  <!-- Security: defense-in-depth (strongly also set these via server headers) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self';
+          script-src 'self' 'unsafe-inline';
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          img-src 'self' data: blob: https:;
+          font-src 'self' https://fonts.gstatic.com data:;
+          connect-src 'self' http: https:;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          frame-ancestors 'none';
+        ">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/cards.css" /> <!-- shared product card + grid rules -->
+
+  <!-- Sidebar CSS (absolute path + cache-bust to ensure it loads) -->
+  <link rel="stylesheet" href="/buyers-page/css/side-categories.css?v=7" />
+  <!-- ^ v=7 includes the mobile hide + stronger !important rules -->
+
+  <style>
+    /* === PAGE LAYOUT (hand off layout to side-categories.css) ===
+       - Sidebar is fixed; .with-sidebar reserves space via padding-left
+       - Keep this container as a simple block to allow #grid to go full-width
+    */
+    .page.with-sidebar{
+      display:block;
+      --stickyTop:112px; --sidebarW:210px;
+    }
+
+    /* tighten space between left rail and content */
+    .with-sidebar .content { min-width: 0; }
+    .with-sidebar .cat-wrap {
+      max-width: 100%;
+      margin: 16px 12px;   /* hug the rail */
+      padding: 0;
+    }
+
+    /* MOBILE: sidebar fully hidden; content uses full width */
+    @media (max-width: 900px){
+      .sidecat{ display:none !important; }
+      .with-sidebar .content{ min-width:0; }
+      .with-sidebar .cat-wrap{ margin: 12px 10px; }
+    }
+
+    .cat-head { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+    .cat-title { font-size:20px; font-weight:700; }
+    .cat-controls { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+    /* legacy helpers (kept) */
+    .product { display:block; text-decoration:none; color:inherit; }
+    .product .price .oos,
+    .stock-badge.is-oos { color:#B12704; font-weight:600; margin-left:8px; }
+
+    .muted { color:#6b7280; }
+    select, input[type="search"]{ border:1px solid #d5d9d9; border-radius:6px; padding:6px 8px; }
+
+    /* ── Filters styling (rail only) ───────────────────────── */
+    .filters { margin-top: 14px; }
+    .filters__active { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 8px; border:1px solid #d5d9d9; border-radius:999px; font-size:12px;
+      background:#f9fafb;
+    }
+    .chip button{ border:0; background:transparent; cursor:pointer; padding:0 2px; font-size:14px; line-height:1; }
+    .filter-group{ margin:12px 0; }
+    .filter-title{ margin:0 0 8px 0; font-size:14px; font-weight:700; }
+    .checklist{ list-style:none; margin:0; padding:0 0 0 2px; }
+    .checklist li{ margin:6px 0; }
+    .checklist input{ margin-right:6px; }
+    .links{ list-style:none; margin:0; padding:0; }
+    .links li{ margin:6px 0; }
+    .filter-link{
+      border:0; background:none; padding:0; cursor:pointer; color:#111827;
+      text-decoration:none;
+    }
+    .filter-link.is-active{ font-weight:700; text-decoration:none; }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Shared header + subnav -->
+  <div data-include="/partials/header.html"></div>
+
+  <!-- PAGE LAYOUT: Sidebar (left, fixed) + Content (right, full width) -->
+  <div class="page with-sidebar">
+    <!-- LEFT: Category sidebar -->
+    <aside class="sidecat" id="sideCategories" aria-label="Category">
+      <h3 class="sidecat__title">Category</h3>
+      <ul class="sidecat__path" id="catPath"></ul>
+      <ul class="sidecat__children" id="catChildren"></ul>
+
+      <!-- ── Filters panel (below categories) ───────────────────────── -->
+      <!-- Kept hooks: data-locking + data-grid so locking observes #grid -->
+      <div class="filters" id="filters" data-locking="row-wise" data-grid="#grid">
+        <!-- Active chips show here -->
+        <div class="filters__active" id="activeFilters" aria-live="polite"></div>
+
+        <!-- Colour (admin-populated) -->
+        <section class="filter-group" data-group="color" aria-label="Filter by colour">
+          <div class="filter-title">Colour</div>
+          <ul class="checklist"></ul> <!-- Admin script fills items -->
+        </section>
+
+        <!-- Price (admin-populated) -->
+        <section class="filter-group" data-group="price" aria-label="Filter by price">
+          <div class="filter-title">Price</div>
+          <ul class="links"></ul> <!-- Admin script fills items -->
+        </section>
+
+        <!-- Discount (admin-populated) -->
+        <section class="filter-group" data-group="discount" aria-label="Filter by discount">
+          <div class="filter-title">Discount</div>
+          <ul class="links"></ul> <!-- Admin script fills items -->
+        </section>
+      </div>
+      <!-- ─────────────────────────────────────────────────────────────────── -->
+    </aside>
+
+    <!-- RIGHT: category content -->
+    <div class="content">
+      <div class="cat-wrap">
+        <div class="cat-head">
+          <div class="cat-title" id="catTitle">Category</div>
+          <div class="muted" id="catCount"></div>
+          <div class="cat-controls">
+            <input id="q" type="search" placeholder="Filter in results…" aria-controls="grid" />
+            <select id="sort">
+              <option value="relevance">Relevance</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="title_asc">Title: A–Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Placeholder only; category.js will inject the row + products wrapper -->
+        <div id="grid" class="cat-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><div>© Kelenate.</div></footer>
+
+  <!-- ✅ Process include and wire shared header (dropdowns + uploaded logo) -->
+  <script defer src="/js/boot.js"></script>
+  <script type="module" src="/js/chrome-init.js"></script>
+
+  <!-- Page logic -->
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/category.js"></script>
+
+  <!-- Sidebar behavior (absolute path + cache-bust to guarantee fresh JS) -->
+  <script type="module" src="/buyers-page/js/side-categories.js?v=6"></script>
+
+  <!-- 🔧 Admin-driven filters renderer (loads config & builds Colour/Price/Discount) -->
+  <script type="module" src="/buyers-page/js/category-filters-admin-config.js?v=1"></script>
+
+  <!-- Filter behavior (supports “Multi”, card data-colors & row-wise locking) -->
+  <script type="module" src="/buyers-page/js/category-filters.js?v=4"></script>
+  <!-- ^ category-filters.js still reads data-locking/data-grid; no other behavior changed -->
+</body>
+</html>

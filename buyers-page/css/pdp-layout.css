@@ -1,0 +1,59 @@
+/* ===== PDP Layout (grid, shared vars) ===== */
+
+html, body { background:#fff; color:#0f1111; }
+
+:root{
+  --bb-col: clamp(360px, 22vw, 400px); /* desktop gadget column width */
+  --bb-target-vh: 85vh;                /* visible height target for sticky gadget */
+  --media-max-w: 900px;                /* max main image width */
+}
+
+.pdp-wrap {
+  max-width: min(98vw, 1760px);
+  margin: 10px auto;
+  padding: 0 8px;
+}
+
+/* 2 columns: left content + right gadget */
+.pdp-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) var(--bb-col);
+  gap:12px;
+  align-items:start;
+
+  /* allow scrolling descendants in nested layouts */
+  min-height:0;
+}
+
+/* Left side splits into: [gallery][body] ; gallery shrinks to its content */
+.pdp-leftgrid{
+  display:grid;
+  grid-template-columns: fit-content(calc(46px + var(--media-max-w))) 1fr;
+  gap:6px;
+  align-items:start;
+
+  /* allow scrolling descendants in nested layouts */
+  min-height:0;
+}
+
+/* Ensure the left column itself doesn't choke overflow */
+.pdp-left{ min-height:0; }
+
+/* Sticky gadget height target */
+@media (min-width:1100px){
+  .buybox{
+    min-height: var(--bb-target-vh);
+    overflow:auto;
+  }
+}
+
+/* Mobile safety: when other sheets flip to column flex,
+   make sure no ancestor prevents child overflow */
+@media (max-width:768px){
+  .pdp-wrap,
+  .pdp-grid,
+  .pdp-left,
+  .pdp-leftgrid{
+    min-height:0 !important;
+  }
+}

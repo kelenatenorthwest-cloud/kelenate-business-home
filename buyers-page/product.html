@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Product • Kelenate Business Clone</title>
+
+  <!-- Security: defense-in-depth (mirror server headers; allow inline in header partial) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self';
+          script-src 'self' 'unsafe-inline';
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          img-src 'self' data: blob: https:;
+          font-src 'self' https://fonts.gstatic.com data:;
+          connect-src 'self' http: https:;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          frame-ancestors 'none';
+        ">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet" />
+
+  <!-- Site base styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- PDP split styles -->
+  <link rel="stylesheet" href="css/pdp-layout.css" />
+  <link rel="stylesheet" href="css/pdp-gallery.css" />
+  <link rel="stylesheet" href="css/pdp-body.css" />
+  <link rel="stylesheet" href="css/pdp-buybox.css" />
+  <link rel="stylesheet" href="css/pdp-mobile-overrides.css" />
+
+  <style>
+    /* small visual feedback on add */
+    #btnAddCart.ok { outline: 2px solid #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
+
+    /* =============================
+       MOBILE-ONLY INLINE OVERRIDES
+       (loaded last => highest priority)
+       ============================= */
+    @media (max-width: 768px) {
+      :root{ --bb-scale: 1 !important; }
+
+      /* Stack layout on mobile (ensure children can overflow) */
+      .pdp-grid,
+      .pdp-leftgrid{
+        display:flex !important;
+        flex-direction:column !important;
+        gap:12px !important;
+        min-height:0 !important;               /* allow inner scrollers */
+      }
+      .pdp-left{ min-height:0 !important; }
+
+      /* --- ORDERING: gallery immediately after the title --- */
+      .pdp-body{ display: contents !important; }
+      .crumbs     { order: 0 !important; }
+      .pdp-title  { order: 1 !important; }
+      .pdp-gallery{ order: 2 !important; }
+      .price-block,
+      .icon-row,
+      .bullets,
+      .pdp-desc,
+      .divider{ order: 3 !important; }
+
+      /* Kill thumbs; make gallery a full-width block */
+      .pdp-gallery{
+        display:block !important;
+        width:100% !important;
+        max-width:100% !important;
+        margin:0 0 10px 0 !important;
+        grid-template-columns:1fr !important;
+        column-gap:0 !important; gap:0 !important;
+      }
+      .pdp-gallery .pdp-thumbs{ display:none !important; }
+      .pdp-main{ width:100% !important; }
+
+      /* Main viewport uses JS-provided frame height */
+      #pdpMainWrap{
+        position:relative !important;
+        display:block !important;              /* must NOT be flex */
+        height: var(--pdp-frame-h, clamp(320px, 62vw, 460px)) !important;
+        max-width:100% !important;
+
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        -webkit-overflow-scrolling:touch !important;
+        overscroll-behavior:contain !important;
+        scrollbar-gutter: stable both-edges;
+        pointer-events:auto !important;
+        contain: paint;
+
+        background:#fff !important;
+        border:1px solid #d5d9d9 !important;
+        border-radius:12px !important;
+        box-shadow:0 2px 10px rgba(15,17,17,.06);
+        z-index:1;
+        margin-bottom:8px;
+      }
+      #pdpMainWrap::-webkit-scrollbar{ width:10px; }
+      #pdpMainWrap::-webkit-scrollbar-thumb{ background:rgba(15,17,17,.45); border-radius:10px; }
+      #pdpMainWrap{ scrollbar-width:thin; scrollbar-color:rgba(15,17,17,.45) transparent; }
+
+      /* Stacked scroller support */
+      #pdpStack{
+        display:block !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+      #pdpStack img{
+        display:block !important;
+        width:100% !important;
+        height: var(--pdp-frame-h, auto) !important;   /* same frame for every image */
+        max-width:100% !important;
+        max-height:none !important;
+        object-fit:contain !important;
+        object-position:center center !important;
+        margin:0 auto !important;
+        user-select:none !important;
+        -webkit-user-drag:none !important;
+        touch-action:pan-y !important;
+        pointer-events:auto !important;
+      }
+
+      /* ❗ Hide legacy nodes when stacked scroller is active to prevent duplicates */
+      #pdpMainWrap[data-stack-applied="1"] #pdpMainImg,
+      #pdpMainWrap[data-stack-applied="1"] #pdpMainVideo{
+        display:none !important;
+      }
+
+      /* (We no longer force-show legacy nodes here; initial render stays governed by base CSS/JS) */
+
+      /* Wrap title & bullets always */
+      .pdp-title{
+        white-space:normal !important;
+        overflow-wrap:anywhere !important;
+        word-break:break-word !important;
+        font-size:18px !important;
+        line-height:1.28 !important;
+        margin:6px 0 10px !important;
+        font-weight:700 !important;
+      }
+      .bullets, .bullets li, .pdp-desc{
+        white-space:normal !important;
+        overflow-wrap:anywhere !important;
+        word-break:break-word !important;
+        line-height:1.38 !important;
+      }
+
+      /* Buybox full width under image */
+      .buybox{
+        order:3 !important;
+        position:static !important;
+        top:auto !important;
+        transform:none !important;
+
+        width:100% !important;
+        max-width:100% !important;
+
+        background:#fff !important;
+        border:1px solid #d5d9d9 !important;
+        border-radius:12px !important;
+        box-shadow:0 2px 10px rgba(15,17,17,.12) !important;
+        font-size:14px;
+      }
+      .buybox .btn{
+        width:100% !important;
+        padding:12px 16px !important;
+        font-size:16px !important;
+        border-radius:999px !important;
+      }
+      .buybox .btn + .btn{ margin-top:8px !important; }
+
+      /* Avoid duplicate price UI */
+      .price-block{ display:none !important; }
+
+      .divider{ margin:10px 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared buyers header (not used on admin) -->
+  <div id="site-chrome" data-include="/partials/header.html"></div>
+
+  <!-- PDP -->
+  <div class="pdp-wrap">
+    <div class="pdp-grid">
+      <section class="pdp-left">
+        <div class="pdp-leftgrid">
+          <!-- ========== GALLERY SLOT ========== -->
+          <section class="pdp-gallery" data-slot="gallery">
+            <div class="pdp-thumbs" data-slot="thumbs" id="pdpThumbs"></div>
+            <div class="pdp-main" data-slot="main" id="pdpMainWrap">
+              <img id="pdpMainImg" data-slot="main-image" alt="Product image" />
+              <video id="pdpMainVideo" data-slot="main-video" controls style="display:none"></video>
+            </div>
+          </section>
+
+          <!-- ========== BODY SLOT ========== -->
+          <section class="pdp-body" data-slot="body">
+            <div class="crumbs" id="crumbs"></div>
+            <h1 class="pdp-title" id="pdpTitle" data-slot="title">Loading...</h1>
+
+            <div class="divider"></div>
+
+            <div class="price-block" data-slot="price-block">
+              <div class="line"><div class="lbl">M.R.P.:</div><div class="mrp"  id="mrpLine">₹—</div></div>
+              <div class="line"><div class="lbl">Price:</div><div class="val"  id="priceLine">₹—</div></div>
+              <div class="line"><div class="lbl">You Save:</div><div class="save" id="saveLine"></div></div>
+              <div class="price-foot" id="priceFoot">Inclusive of all taxes</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="icon-row" data-slot="icon-row">
+              <div class="icon-item"><span class="material-symbols-outlined">local_shipping</span> Free Delivery</div>
+              <div class="icon-item"><span class="material-symbols-outlined">autorenew</span> 7 days Replacement</div>
+              <div class="icon-item"><span class="material-symbols-outlined">inventory_2</span> Secure Packaging</div>
+              <div class="icon-item"><span class="material-symbols-outlined">verified_user</span> Secure transaction</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <ul class="bullets" id="pdpBullets" data-slot="bullets"></ul>
+            <div class="divider"></div>
+            <div class="pdp-desc" id="pdpShortDesc" data-slot="desc"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ========== BUYBOX (GADGET) SLOT ========== -->
+      <aside class="buybox" data-slot="buybox">
+        <div>
+          <span class="bb-price" id="bbPrice" data-slot="bb-price">₹—</span>
+          <span class="bb-mrp"   id="bbMrp"   data-slot="bb-mrp"></span>
+        </div>
+        <div class="bb-line" id="bbDelivery">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">local_shipping</span>
+          FREE delivery
+        </div>
+        <div class="bb-line" id="bbAddr">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">place</span>
+          Deliver to New Delhi 110052
+        </div>
+        <div class="bb-stock" id="bbStock" data-slot="bb-stock">In stock</div>
+        <div class="bb-line"  id="bbSeller">Sold by <strong>Kelenate</strong> and Fulfilled by Kelenate.</div>
+        <div class="qty" data-slot="bb-qty">
+          <label for="qty">Qty</label>
+          <input id="qty" type="number" min="1" value="1" />
+        </div>
+        <button class="btn"           id="btnAddCart" data-slot="bb-add">Add to Cart</button>
+        <button class="btn secondary" id="btnBuyNow"  data-slot="bb-buy">Buy Now</button>
+        <div class="bb-row" style="margin-top:10px;">
+          <span class="material-symbols-outlined">verified_user</span><span>Secure transaction</span>
+        </div>
+        <div class="bb-row">
+          <span class="material-symbols-outlined">card_giftcard</span><span>Add gift options</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="footer"><div>© Kelenate.</div></footer>
+
+  <!-- Inject header partial + wire header -->
+  <script defer src="/js/boot.js"></script>
+  <script type="module" src="/js/chrome-init.js?v=addr5"></script>
+  <!-- PDP data fill + CTA wiring (this handles Add to Cart / Buy Now with credentials:'include') -->
+  <script type="module" src="js/product.js"></script>
+  <script type="module" src="js/product.mobile.js"></script>
+
+</body>
+</html>

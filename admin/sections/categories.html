@@ -1,0 +1,36 @@
+<div class="grid-2">
+  <div class="card">
+    <h3 class="section-title">Create Category</h3>
+    <div class="grid-2">
+      <div><label class="muted">Type</label><select id="cat-create-type" class="input"><option value="main">Main</option><option value="home">Home</option></select></div>
+      <div><label class="muted">Name</label><input id="cat-create-name" class="input" placeholder="e.g. Accessories" /></div>
+    </div>
+    <div class="right" style="margin-top:12px"><button id="btn-cat-create" class="btn primary">Create</button></div>
+  </div>
+  <div class="card">
+    <h3 class="section-title">Rename Category</h3>
+    <div class="grid-2">
+      <div><label class="muted">Type</label><select id="cat-rename-type" class="input"><option value="main">Main</option><option value="home">Home</option></select></div>
+      <div>
+        <label class="muted">Old → New</label>
+        <div class="grid-2"><input id="cat-rename-old" class="input" placeholder="Old name" /><input id="cat-rename-new" class="input" placeholder="New name" /></div>
+      </div>
+    </div>
+    <div class="right" style="margin-top:12px"><button id="btn-cat-rename" class="btn">Rename</button></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3 class="section-title">Main Categories</h3>
+    <div class="stack" style="margin-bottom:12px"><span id="main-count" class="pill">0 total</span><input id="main-filter" class="input" placeholder="Filter…" style="max-width:260px" /></div>
+    <table><thead><tr><th>Name</th><th style="width:160px">Actions</th></tr></thead><tbody id="main-tbody"></tbody></table>
+  </div>
+  <div class="card">
+    <h3 class="section-title">Home Categories</h3>
+    <div class="stack" style="margin-bottom:12px"><span id="home-count" class="pill">0 total</span><input id="home-filter" class="input" placeholder="Filter…" style="max-width:260px" /></div>
+    <table><thead><tr><th>Name</th><th style="width:160px">Actions</th></tr></thead><tbody id="home-tbody"></tbody></table>
+  </div>
+</div>

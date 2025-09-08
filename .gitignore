@@ -1,0 +1,42 @@
+# Node / JS
+node_modules/
+server/node_modules/
+package-lock.json
+server/package-lock.json
+
+# Env / secrets
+.env
+server/.env
+
+# Logs
+*.log
+logs/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temp
+tmp/
+server/tmp/
+
+# Databases & SQLite artifacts
+*.db
+*.db-wal
+*.db-shm
+*.sqlite*
+*.sqlite3
+# Uploads (keep dir, ignore files)
+server/uploads/*
+!/server/uploads/.gitkeep
+
+# Export artifacts
+server/products_export_all.csv
+server/products_export_all.xlsx
+server/app_dump.sql
+
+# Archives / backups
+_archive/
+*.zip

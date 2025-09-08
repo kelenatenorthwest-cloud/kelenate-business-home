@@ -1,0 +1,108 @@
+<!-- admin/sections/branding.html -->
+<div class="panel">
+  <h2>Branding</h2>
+  <p class="muted">Upload your store logo and set header colors for buyer pages.</p>
+
+  <!-- ========== LOGO CARD ========== -->
+  <div class="card" style="display:flex; gap:20px; align-items:flex-start; margin-bottom:16px;">
+    <div>
+      <div class="tiny muted" style="margin-bottom:6px;">Current Logo Preview</div>
+      <div style="border:1px dashed #ccc; border-radius:8px; padding:12px; width:260px; height:80px; display:flex; align-items:center; justify-content:center; background:#fff;">
+        <img id="brandingPreview" alt="Logo preview" style="max-width:240px; max-height:60px; display:none;" />
+        <span class="muted" id="brandingEmpty">No logo uploaded</span>
+      </div>
+      <div class="tiny muted" id="brandingUrl" style="margin-top:6px;"></div>
+    </div>
+
+    <div style="flex:1;">
+      <label class="muted tiny" for="brandingFile">Upload PNG/JPG/GIF/WEBP</label><br/>
+      <input id="brandingFile" type="file" accept="image/*" />
+      <div class="tiny muted" style="margin:6px 0;">OR paste an image URL:</div>
+      <input id="brandingLink" type="url" placeholder="https://example.com/logo.png" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;"/>
+
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button id="brandingSave" class="btn primary">Save Logo</button>
+        <button id="brandingClear" class="btn">Clear</button>
+      </div>
+      <div class="tiny muted" style="margin-top:8px;">Max file size 5MB. Images are served from <code>/uploads/</code>.</div>
+    </div>
+  </div>
+
+  <!-- ========== COLORS CARD ========== -->
+  <div class="card" style="display:grid; gap:12px;">
+    <h3 style="margin:0 0 8px;">Header Colors</h3>
+    <p class="muted" style="margin-top:0">Configure background and text colors for the two header lines (top bar &amp; subnav). Applies everywhere on the buyer site.</p>
+
+    <!-- Top bar background + main text -->
+    <div class="grid-2">
+      <div>
+        <label class="muted tiny" for="colorHeaderBg">Top bar background</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+          <input id="colorHeaderBg" type="color" value="#131921" />
+          <input id="colorHeaderBgText" type="text" class="input" placeholder="#131921" style="max-width:140px;" />
+        </div>
+      </div>
+      <div>
+        <label class="muted tiny" for="colorHeaderText">Top bar text (fallback)</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+          <input id="colorHeaderText" type="color" value="#ffffff" />
+          <input id="colorHeaderTextHex" type="text" class="input" placeholder="#ffffff" style="max-width:140px;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: Per-line colors inside the top bar -->
+    <div class="grid-2">
+      <div>
+        <label class="muted tiny" for="colorHeaderTextTiny">Top bar tiny line</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+          <input id="colorHeaderTextTiny" type="color" value="#ffffff" />
+          <input id="colorHeaderTextTinyHex" type="text" class="input" placeholder="#ffffff" style="max-width:140px;" />
+        </div>
+      </div>
+      <div>
+        <label class="muted tiny" for="colorHeaderTextStrong">Top bar strong line</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+          <input id="colorHeaderTextStrong" type="color" value="#ffffff" />
+          <input id="colorHeaderTextStrongHex" type="text" class="input" placeholder="#ffffff" style="max-width:140px;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Subnav -->
+    <div class="grid-2">
+      <div>
+        <label class="muted tiny" for="colorSubnavBg">Subnav background</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+          <input id="colorSubnavBg" type="color" value="#232f3e" />
+          <input id="colorSubnavBgText" type="text" class="input" placeholder="#232f3e" style="max-width:140px;" />
+        </div>
+      </div>
+      <div>
+        <label class="muted tiny" for="colorSubnavText">Subnav text</label>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+          <input id="colorSubnavText" type="color" value="#ffffff" />
+          <input id="colorSubnavTextHex" type="text" class="input" placeholder="#ffffff" style="max-width:140px;" />
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+      <button id="brandingSaveColors" class="btn primary">Save Colors</button>
+      <span id="brandingColorStatus" class="tiny muted"></span>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="tiny muted">Preview</div>
+      <div id="brandingColorPreview" style="margin-top:6px; border-radius:8px; overflow:hidden; border:1px solid #eee;">
+        <!-- Enhanced preview shows tiny + strong lines separately -->
+        <div id="previewHeader" style="height:auto; min-height:44px; background:#131921; color:#ffffff; display:flex; align-items:center; padding:6px 8px; gap:8px; flex-direction:column; align-items:flex-start;">
+          <div class="tiny">Hello, Guest</div>
+          <div class="strong">Account &amp; Lists</div>
+        </div>
+        <div id="previewSubnav" style="height:28px; background:#232f3e; color:#ffffff; display:flex; align-items:center; padding-left:8px;">Subnav</div>
+      </div>
+      <div class="tiny muted" style="margin-top:6px;">Tip: After saving, hard refresh buyer pages if your browser cached styles (Ctrl/Cmd + Shift + R).</div>
+    </div>
+  </div>
+</div>

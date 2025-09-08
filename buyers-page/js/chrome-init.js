@@ -1,0 +1,508 @@
+// buyers-page/js/chrome-init.js
+// Wire shared header after includes are injected
+import { getMainCategories, getSiteSettings, authMe, authLogout } from './api.js';
+import { $ } from './utils.js';
+import { initDropdown, fillMenuWithCategories } from './dropdowns.js';
+
+// Make the header search work everywhere the header is used
+import './searchbar.js';
+
+let CURRENT_USER = null;
+// 🔒 cache categories so we can quickly re-fill if another script clears the menu
+let MAIN_CATS = null;
+let MEGA_OBS = null;
+
+/* ---------------------- Address helpers (popup) ---------------------- */
+function ensureAddrModalStyle(){
+  if (document.getElementById('addrModalStyle')) return;
+  const s = document.createElement('style');
+  s.id = 'addrModalStyle';
+  s.textContent = `
+    .addr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:6500}
+    .addr-modal{width:min(720px,92vw);background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .addr-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eee}
+    .addr-title{font-size:18px;font-weight:600}
+    .addr-body{padding:12px 16px;max-height:min(70vh,560px);overflow:auto}
+    .addr-item{border:1px solid #e5e7eb;border-radius:10px;padding:12px 12px;margin:8px 0;display:flex;gap:12px;align-items:flex-start}
+    .addr-item .info{flex:1}
+    .addr-item .name{font-weight:600}
+    .addr-item .small{font-size:12px;color:#6b7280;margin-top:4px}
+    .addr-actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid #eee}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer}
+    .btn.primary{background:#fbbf24;border-color:#d97706}
+  `;
+  document.head.appendChild(s);
+}
+
+function shortAddress(a, summary){
+  if (summary?.bottom) return summary.bottom;
+  if (!a) return 'Add address';
+  const city = (a.city || '').trim();
+  const state = (a.state || '').trim();
+  const pin  = (a.pincode || '').trim();
+  const last = [city, state].filter(Boolean).join(', ');
+  if (last && pin) return `${last} ${pin}`;
+  return last || pin || 'Add address';
+}
+
+async function fetchJSON(url, opt){
+  const res = await fetch(url, { credentials:'include', ...(opt||{}) });
+  const t = await res.text();
+  let d; try{ d = t ? JSON.parse(t) : {}; }catch{ d = { raw:t }; }
+  if (!res.ok) throw new Error(d?.error || res.statusText);
+  return d;
+}
+
+async function refreshActiveAddress(){
+  const strong = $('#deliverShort');
+  if (!strong) return;
+  try{
+    const { address, summary } = await fetchJSON('/api/addresses/active');
+    strong.textContent = shortAddress(address, summary);
+  }catch{
+    strong.textContent = 'Add address';
+  }
+}
+
+function openAddressModal(){
+  if (!CURRENT_USER) {
+    location.href = '/login.html?return=' + encodeURIComponent(location.pathname + location.search);
+    return;
+  }
+
+  ensureAddrModalStyle();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'addr-overlay';
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) overlay.remove(); });
+
+  const box = document.createElement('div');
+  box.className = 'addr-modal';
+  box.innerHTML = `
+    <div class="addr-head">
+      <div class="addr-title">Choose your location</div>
+      <button class="btn" id="addrClose">Close</button>
+    </div>
+    <div class="addr-body" id="addrList">Loading…</div>
+    <div class="addr-actions">
+      <button class="btn" id="addrManage">Manage addresses</button>
+      <button class="btn primary" id="addrAdd">Add address</button>
+    </div>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  $('#addrClose', box)?.addEventListener('click', ()=>overlay.remove());
+
+  // where to come back after add/edit/manage
+  const returnTo = encodeURIComponent(location.pathname + location.search);
+
+  // 🔁 UPDATED: use new page names
+  $('#addrAdd', box)?.addEventListener('click', ()=>{
+    location.href = `/add-address.html?return=${returnTo}`;
+  });
+  $('#addrManage', box)?.addEventListener('click', ()=>{
+    location.href = `/address-book.html?return=${returnTo}`;
+  });
+
+  (async ()=>{
+    try{
+      const { items } = await fetchJSON('/api/addresses');
+      const list = $('#addrList', box);
+      list.innerHTML = '';
+      if (!items?.length){
+        const empty = document.createElement('div');
+        empty.className = 'small';
+        empty.textContent = 'No addresses yet. Click “Add address”.';
+        list.appendChild(empty);
+        return;
+      }
+      items.forEach(a=>{
+        const row = document.createElement('div');
+        row.className = 'addr-item';
+        row.innerHTML = `
+          <div class="info">
+            <div class="name">${a.full_name || CURRENT_USER?.firstName || ''}</div>
+            <div>${a.line1 || ''}</div>
+            ${a.line2 ? `<div>${a.line2}</div>` : ''}
+            <div>${[a.city, a.state, a.pincode].filter(Boolean).join(', ')}</div>
+            <div class="small">${a.phone ? `Phone: ${a.phone}` : ''}</div>
+          </div>
+          <div><button class="btn primary">Deliver here</button></div>
+        `;
+        row.querySelector('button')?.addEventListener('click', async ()=>{
+          try{
+            await fetchJSON(`/api/addresses/${a.id}/use`, { method:'POST' });
+            await refreshActiveAddress();
+            overlay.remove();
+            window.dispatchEvent(new Event('address:changed'));
+          }catch(err){
+            alert('Could not select address: ' + err.message);
+          }
+        });
+        list.appendChild(row);
+      });
+    }catch(err){
+      const list = $('#addrList', box);
+      list.textContent = 'Could not load addresses: ' + err.message;
+    }
+  })();
+}
+
+/* ---------------------- Existing header code ---------------------- */
+function setUserHeader(user){
+  CURRENT_USER = user || null;
+
+  const first = user?.firstName || null;
+  const state = (user?.stateCode || '').toUpperCase();
+
+  const hello = $('#helloName');
+  const deliverName = $('#deliverName');
+  const deliverState = $('#deliverState');
+
+  if (hello)        hello.textContent = first || 'Sign in';
+  if (deliverName)  deliverName.textContent = first || 'Guest';
+  if (deliverState) deliverState.textContent = state || '—';
+
+  refreshActiveAddress();
+
+  // Primary handler on the button (or anchor fallback)
+  const changeBtn = $('#changeAddress');
+  if (changeBtn){
+    if (changeBtn.tagName === 'A') {
+      changeBtn.setAttribute('href', '#');
+      changeBtn.setAttribute('role', 'button');
+    }
+    const handler = (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      openAddressModal();
+      return false;
+    };
+    changeBtn.addEventListener('pointerdown', handler, { capture:true });
+    changeBtn.addEventListener('click',       handler, { capture:true });
+  }
+
+  // If not logged in, clicking the account box goes to login
+  const accountBtn = $('#accountBtn');
+  if (accountBtn) {
+    accountBtn.style.cursor = 'pointer';
+    accountBtn.onclick = () => { if (!first) location.href = '/login.html'; };
+  }
+}
+
+// ---- small helpers for account dropdown ----
+function liLink(text, href, opts = {}) {
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.textContent = text;
+  a.href = href || '#';
+  if (opts.id) a.id = opts.id;
+  li.appendChild(a);
+  return li;
+}
+function liDivider() {
+  const li = document.createElement('li');
+  li.style.margin = '6px 0';
+  li.innerHTML = '<div style="height:1px;background:#eee;"></div>';
+  return li;
+}
+function buildAccountMenu(user){
+  const ul = $('#accountMenuList');
+  if (!ul) return;
+  ul.innerHTML = '';
+
+  if (user) {
+    ul.appendChild(liLink('Your Account', '/account.html'));
+    ul.appendChild(liLink('Your Orders', '/orders.html'));
+    ul.appendChild(liDivider());
+    const signOut = liLink('Sign Out', '#', { id: 'accountSignOut' }); // <- fixed id (no space)
+    ul.appendChild(signOut);
+
+    signOut.querySelector('a').addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await authLogout(); } catch {}
+      location.reload();
+    });
+  } else {
+    ul.appendChild(liLink('Sign In', '/login.html'));
+    ul.appendChild(liLink('Create account', '/register.html'));
+  }
+}
+
+function normalizeColor(v){
+  if (v == null) return '';
+  const s = String(v).trim();
+  if (!s || s === 'null' || s === 'undefined') return '';
+  if (/^#?[0-9a-f]{6}$/i.test(s)) return s.startsWith('#') ? s : ('#' + s);
+  return s;
+}
+
+function ensureBrandTextStyle(){
+  let tag = document.getElementById('brandColorStyle');
+  if (tag) return tag;
+  tag = document.createElement('style');
+  tag.id = 'brandColorStyle';
+  tag.textContent = `
+    /* Sticky is owned by the wrapper (.sticky-chrome), not .header */
+    .sticky-chrome{ position: sticky; top: 0; z-index: 5000; }
+
+    .header{
+      position: relative; /* keep stacking context local */
+      background: var(--header, #131921);
+      color: var(--headerText, #ffffff) !important;
+    }
+    .header *:not(input):not(textarea):not(select) { color: var(--headerText, #ffffff) !important; }
+    .header a:link,
+    .header a:visited,
+    .header a:hover,
+    .header a:active { color: var(--headerText, #ffffff) !important; }
+    .header .material-symbols-outlined { color: var(--headerText, #ffffff) !important; }
+    .header .tiny   { color: var(--headerTextSmall,  var(--headerText, #ffffff)) !important; }
+    .header .strong { color: var(--headerTextStrong, var(--headerText, #ffffff)) !important; }
+    .header .search__input,
+    .header input.search__input { color: initial !important; }
+    .header .search__input::placeholder { color: inherit; }
+
+    .subnav{ background: var(--nav, #232f3e); color: var(--navText, #ffffff) !important; }
+    .subnav *:not(input):not(textarea):not(select) { color: var(--navText, #ffffff) !important; }
+    .subnav a:link,
+    .subnav a:visited,
+    .subnav a:hover,
+    .subnav a:active,
+    .subnav .material-symbols-outlined { color: var(--navText, #ffffff) !important; }
+  `;
+  document.head.appendChild(tag);
+  return tag;
+}
+
+function applyHeaderBrandingFromSettings(s){
+  console.debug('[chrome-init] site-settings:', s);
+
+  const src = s?.header_logo;
+  const img = $('#siteLogo');
+  if (src && img) {
+    img.src = src;
+    img.style.display = 'block';
+    document.querySelectorAll('.logo__amazon, .logo__smile, .logo__business')
+      .forEach(el => el.style.display = 'none');
+  }
+
+  ensureBrandTextStyle();
+
+  const top = normalizeColor(s?.header_color || s?.header_top_color || '');
+  const sub = normalizeColor(s?.nav_color    || s?.header_subnav_color || '');
+
+  const topText = normalizeColor(s?.header_text_color || '');
+  const subText = normalizeColor(s?.nav_text_color    || '');
+
+  const small  = normalizeColor(s?.header_text_small  || '');
+  const strong = normalizeColor(s?.header_text_strong || '');
+
+  const root = document.documentElement;
+  if (top)     root.style.setProperty('--header',     top);
+  if (sub)     root.style.setProperty('--nav',        sub);
+  if (topText) root.style.setProperty('--headerText', topText);
+  if (subText) root.style.setProperty('--navText',    subText);
+  if (small)   root.style.setProperty('--headerTextSmall',  small);
+  if (strong)  root.style.setProperty('--headerTextStrong', strong);
+
+  const header = document.querySelector('.header');
+  const subnav = document.querySelector('.subnav');
+  if (header && top)     header.style.background = top;
+  if (subnav && sub)     subnav.style.background = sub;
+  if (header && topText) header.style.color      = topText;
+  if (subnav && subText) subnav.style.color      = subText;
+
+  const tinyEls   = document.querySelectorAll('.header .tiny');
+  const strongEls = document.querySelectorAll('.header .strong');
+  if (small)  tinyEls.forEach(el => { el.style.color = small; });
+  if (strong) strongEls.forEach(el => { el.style.color = strong; });
+
+  console.debug('[chrome-init] applied colors', { top, sub, topText, subText, small, strong });
+}
+
+/* ---------- Cart helpers (user-based) ---------- */
+async function refreshCartCount(){
+  const badge = $('#cartCount');
+  if (!badge) return;
+  try {
+    const res = await fetch('/api/cart', {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    const count = Number(data.count || 0);
+    badge.textContent = String(count);
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+    badge.setAttribute('aria-label', `Cart (${count})`);
+  } catch (_e) {
+    badge.textContent = '0';
+    badge.style.display = 'none';
+  }
+}
+
+function wireCartLink(){
+  const el = document.getElementById('cartBtn') || document.querySelector('a.cart');
+  if (!el) return;
+  if (el.tagName === 'A') el.href = '/cart';
+  else {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => { location.href = '/cart'; });
+  }
+}
+
+/* ---------- helpers to keep desktop mega populated ---------- */
+function fillAllMenus(categories){
+  // Only replace menus when we actually have categories, to preserve HTML fallbacks
+  if (!Array.isArray(categories) || categories.length === 0) return;
+  if ($('#allMenu'))   fillMenuWithCategories($('#allMenu ul'),   categories);
+  if ($('#megaMenu'))  fillMenuWithCategories($('#megaMenu ul'),  categories);
+  if ($('#mMegaMenu')) fillMenuWithCategories($('#mMegaMenu ul'), categories);
+}
+
+function observeMegaMenu() {
+  const ul = document.querySelector('#megaMenu ul');
+  if (!ul) return;
+  if (MEGA_OBS) MEGA_OBS.disconnect(); // reset if any
+
+  // Capture the initial fallback HTML placed in fragments/header.html
+  const fallbackHTML = ul.innerHTML;
+
+  MEGA_OBS = new MutationObserver(() => {
+    // If some other script clears the list, immediately re-fill from cache
+    if (ul && ul.childElementCount === 0) {
+      if (Array.isArray(MAIN_CATS) && MAIN_CATS.length) {
+        fillMenuWithCategories(ul, MAIN_CATS);
+      } else if (fallbackHTML && ul.innerHTML.trim() === '') {
+        // restore original fallback so desktop never shows an empty shell
+        ul.innerHTML = fallbackHTML;
+      }
+    }
+  });
+  MEGA_OBS.observe(ul, { childList: true });
+}
+
+function primeOnDemandMegaFill(){
+  const hamBtn = document.getElementById('hamburger');
+  if (!hamBtn) return;
+  const tryFill = () => {
+    const ul = document.querySelector('#megaMenu ul');
+    if (ul && ul.childElementCount === 0 && Array.isArray(MAIN_CATS) && MAIN_CATS.length) {
+      fillMenuWithCategories(ul, MAIN_CATS);
+    }
+  };
+  // Fill as soon as user interacts (covers lazy timing/races)
+  hamBtn.addEventListener('pointerdown', tryFill);
+  hamBtn.addEventListener('mouseenter', tryFill);
+  hamBtn.addEventListener('click', tryFill);
+}
+
+/* ---------- Main header wiring ---------- */
+function wireHeader() {
+  // Search "All" dropdown (desktop)
+  initDropdown({ button: '#btnAll',     menu: '#allMenu'   });
+
+  // Desktop mega hamburger
+  initDropdown({ button: '#hamburger',  menu: '#megaMenu'  });
+
+  // ✅ Mobile hamburger
+  initDropdown({ button: '#mHamburger', menu: '#mMegaMenu' });
+
+  // Start watching for unexpected clears on the desktop mega menu
+  observeMegaMenu();
+  primeOnDemandMegaFill();
+
+  // Account dropdown (only if present)
+  if ($('#accountBtn') && $('#accountMenu')) {
+    initDropdown({ button: '#accountBtn', menu: '#accountMenu' });
+  }
+
+  getMainCategories()
+    .then(categories => {
+      MAIN_CATS = Array.isArray(categories) ? categories : [];
+      fillAllMenus(MAIN_CATS); // guarded: preserves fallbacks when empty
+
+      // Safety: re-fill on the next micro/macro ticks if something raced
+      queueMicrotask(() => {
+        const ul = document.querySelector('#megaMenu ul');
+        if (ul && ul.childElementCount === 0 && MAIN_CATS.length) {
+          fillMenuWithCategories(ul, MAIN_CATS);
+        }
+      });
+      setTimeout(() => {
+        const ul = document.querySelector('#megaMenu ul');
+        if (ul && ul.childElementCount === 0 && MAIN_CATS.length) {
+          fillMenuWithCategories(ul, MAIN_CATS);
+        }
+      }, 60);
+
+      // inline category links in subnav (next to Home)
+      const catsBar = document.querySelector('#subnavCats');
+      if (catsBar) {
+        catsBar.innerHTML = '';
+        (MAIN_CATS || []).forEach(label => {
+          const a = document.createElement('a');
+          a.href = `category.html?type=main&value=${encodeURIComponent(label)}`;
+          a.textContent = label;
+          catsBar.appendChild(a);
+        });
+      }
+
+      // debug counts
+      console.debug('[chrome-init] cats:', MAIN_CATS.length, {
+        megaLi: document.querySelectorAll('#megaMenu li').length,
+        mobileLi: document.querySelectorAll('#mMegaMenu li').length,
+        allLi: document.querySelectorAll('#allMenu li').length,
+      });
+    })
+    .catch((e) => console.warn('[chrome-init] getMainCategories failed', e));
+
+  getSiteSettings()
+    .then(applyHeaderBrandingFromSettings)
+    .catch((e) => console.warn('[chrome-init] getSiteSettings failed', e));
+
+  authMe()
+    .then(({ user }) => { setUserHeader(user); buildAccountMenu(user); })
+    .catch(() => { setUserHeader(null); buildAccountMenu(null); });
+
+  wireCartLink();
+  refreshCartCount();
+  window.addEventListener('cart:updated', refreshCartCount);
+  window.addEventListener('address:changed', refreshActiveAddress);
+}
+
+/* ---------- Extra safety: global capture to force modal ---------- */
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('#changeAddress');
+  if (!target) return;
+  // Neutralize any stray href on the element
+  if (target.tagName === 'A') target.removeAttribute('href');
+  e.preventDefault();
+  e.stopPropagation();
+  openAddressModal();
+}, { capture: true });
+
+function runWhenReady() {
+  if (window.__includesReady) wireHeader();
+  else document.addEventListener('includes:ready', wireHeader, { once: true });
+}
+runWhenReady();
+
+/* ---- fallback: if desktop mega menu opens but remains empty, fill it once ---- */
+function forceFillMegaMenuIfEmpty(){
+  setTimeout(()=>{
+    try{
+      const ul = document.querySelector('#megaMenu ul');
+      if (ul && !ul.children.length && Array.isArray(MAIN_CATS) && MAIN_CATS.length){
+        fillMenuWithCategories(ul, MAIN_CATS);
+      }
+    }catch(e){
+      console.warn('[hamburger-debug] fill failed', e);
+    }
+  }, 0);
+}
+if (window.__includesReady) forceFillMegaMenuIfEmpty();
+else document.addEventListener('includes:ready', forceFillMegaMenuIfEmpty, { once:true });

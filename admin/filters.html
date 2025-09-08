@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Filters Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Open Sans",sans-serif;margin:24px;line-height:1.4}
+    h1{margin:0 0 16px}
+    fieldset{border:1px solid #ddd;border-radius:8px;margin:16px 0;padding:12px}
+    legend{font-weight:700}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #e5e7eb;padding:6px 8px}
+    input[type="text"],input[type="number"],select{padding:6px 8px}
+    .row-actions{white-space:nowrap}
+    .btn{display:inline-block;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer}
+    .btn.primary{background:#111827;color:#fff;border-color:#111827}
+    .stack{display:flex;gap:8px;align-items:center}
+  </style>
+</head>
+<body>
+  <h1>Left Rail Filters — Admin</h1>
+  <div class="stack">
+    <label>Unavailable mode:
+      <select id="unavailable_mode">
+        <option value="lock">lock (disabled but visible)</option>
+        <option value="hide">hide (remove from list)</option>
+      </select>
+    </label>
+    <button class="btn" id="reload">Reload</button>
+    <button class="btn primary" id="save">Save</button>
+  </div>
+
+  <fieldset>
+    <legend>Colours</legend>
+    <table id="colorsTbl">
+      <thead><tr><th>Name</th><th>Dot (CSS color)</th><th class="row-actions">Actions</th></tr></thead>
+    </table>
+    <div class="stack">
+      <input id="c_name" placeholder="e.g. Red" type="text"/>
+      <input id="c_dot" placeholder="e.g. #ef4444 or transparent" type="text"/>
+      <button class="btn" id="c_add">Add</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Price Bands</legend>
+    <table id="priceTbl">
+      <thead><tr><th>Label</th><th>Min (₹)</th><th>Max (₹ or empty)</th><th class="row-actions">Actions</th></tr></thead>
+    </table>
+    <div class="stack">
+      <input id="p_label" placeholder="Label" type="text"/>
+      <input id="p_min" placeholder="Min" type="number"/>
+      <input id="p_max" placeholder="Max (blank for open-ended)" type="number"/>
+      <button class="btn" id="p_add">Add</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Discounts</legend>
+    <table id="discTbl">
+      <thead><tr><th>Label</th><th>Min %</th><th class="row-actions">Actions</th></tr></thead>
+    </table>
+    <div class="stack">
+      <input id="d_label" placeholder="Label" type="text"/>
+      <input id="d_min" placeholder="Min %" type="number"/>
+      <button class="btn" id="d_add">Add</button>
+    </div>
+  </fieldset>
+
+  <script>
+    const API = "/api/admin/filters-config";
+    let cfg = null;
+    const el = (s,r=document)=>r.querySelector(s);
+    const mk = (t,cls)=>{const n=document.createElement(t); if(cls)n.className=cls; return n;};
+    function rowBtn(txt,fn){const b=mk('button','btn'); b.textContent=txt; b.onclick=fn; return b;}
+    function clear(tbl){ while(tbl.rows.length>1) tbl.deleteRow(1); }
+
+    async function load(){ const r=await fetch(API,{cache:'no-store'}); cfg=await r.json(); paint(); }
+    function mkInput(obj,key,idx,type){
+      const input=mk("input"); input.type=type; input.value=obj[key]??"";
+      input.oninput=e=>{ let v=e.target.value; if(type==="number"&&v!=="") v=Number(v); if(v==="") v=null; obj[key]=v; };
+      return input;
+    }
+    function paint(){
+      el("#unavailable_mode").value = cfg.unavailable_mode || "lock";
+      const ctbl=el("#colorsTbl"); clear(ctbl);
+      (cfg.colors||[]).forEach((c,i)=>{ const tr=ctbl.insertRow();
+        tr.insertCell().appendChild(mkInput(c,"name",i,"text"));
+        tr.insertCell().appendChild(mkInput(c,"dot",i,"text"));
+        const act=tr.insertCell(); act.className="row-actions";
+        act.appendChild(rowBtn("Delete",()=>{cfg.colors.splice(i,1); paint();}));
+      });
+      const ptbl=el("#priceTbl"); clear(ptbl);
+      (cfg.price_bands||[]).forEach((p,i)=>{ const tr=ptbl.insertRow();
+        tr.insertCell().appendChild(mkInput(p,"label",i,"text"));
+        tr.insertCell().appendChild(mkInput(p,"min",i,"number"));
+        tr.insertCell().appendChild(mkInput(p,"max",i,"number"));
+        const act=tr.insertCell(); act.className="row-actions";
+        act.appendChild(rowBtn("Delete",()=>{cfg.price_bands.splice(i,1); paint();}));
+      });
+      const dtbl=el("#discTbl"); clear(dtbl);
+      (cfg.discounts||[]).forEach((d,i)=>{ const tr=dtbl.insertRow();
+        tr.insertCell().appendChild(mkInput(d,"label",i,"text"));
+        tr.insertCell().appendChild(mkInput(d,"min",i,"number"));
+        const act=tr.insertCell(); act.className="row-actions";
+        act.appendChild(rowBtn("Delete",()=>{cfg.discounts.splice(i,1); paint();}));
+      });
+    }
+
+    el("#c_add").onclick=()=>{ const name=el("#c_name").value.trim(); const dot=el("#c_dot").value.trim();
+      if(!name) return; (cfg.colors ||= []).push(dot?{name,dot}:{name}); el("#c_name").value=""; el("#c_dot").value=""; paint(); };
+
+    el("#p_add").onclick=()=>{ const label=el("#p_label").value.trim();
+      const min=el("#p_min").value?Number(el("#p_min").value):0;
+      const max=el("#p_max").value?Number(el("#p_max").value):null;
+      if(!label) return; (cfg.price_bands ||= []).push({label,min,max});
+      el("#p_label").value=""; el("#p_min").value=""; el("#p_max").value=""; paint(); };
+
+    el("#d_add").onclick=()=>{ const label=el("#d_label").value.trim();
+      const min=el("#d_min").value?Number(el("#d_min").value):null;
+      if(!label||min==null) return; (cfg.discounts ||= []).push({label,min});
+      el("#d_label").value=""; el("#d_min").value=""; paint(); };
+
+    el("#save").onclick=async()=>{ cfg.unavailable_mode = el("#unavailable_mode").value;
+      const r=await fetch(API,{method:"PUT",headers:{'content-type':'application/json'},body:JSON.stringify(cfg)});
+      if(!r.ok) return alert("Save failed"); alert("Saved!"); };
+
+    el("#reload").onclick=load;
+    load();
+  </script>
+</body>
+</html>

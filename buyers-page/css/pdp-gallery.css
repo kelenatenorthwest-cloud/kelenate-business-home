@@ -1,0 +1,157 @@
+/* ===== PDP Gallery (thumbnails + main image) ===== */
+
+.pdp-gallery{
+  display:grid;
+  grid-template-columns:46px 1fr !important; /* 44px thumb + 1px borders = 46px */
+  column-gap:0 !important;
+  gap:0 !important;
+  width:max-content; /* shrink to intrinsic width (so body moves left) */
+  --media-max-w: 600px; /* cap used by layout math */
+  max-width:calc(46px + var(--media-max-w));
+}
+.pdp-gallery > *{ margin:0 !important; }
+
+.pdp-thumbs{
+  width:46px !important;
+  display:flex; flex-direction:column; gap:4px;
+  max-height:560px; overflow:auto;
+}
+
+.thumb{
+  width:44px; height:44px;
+  border:1px solid #ddd; border-radius:6px;
+  background:#f8f8f8 center/cover no-repeat;
+  cursor:pointer; position:relative;
+}
+.thumb.is-video::after{
+  content:"play_circle";
+  font-family:"Material Symbols Outlined";
+  position:absolute; right:2px; bottom:2px;
+  font-size:18px; background:rgba(255,255,255,.85);
+  border-radius:50%; padding:0 2px; line-height:1;
+}
+
+/* main media hugs the thumbs (no border) */
+.pdp-main{
+  border:none; border-radius:8px; padding:0;
+  display:flex; align-items:center; justify-content:center !important;
+  width:600px;              /* fixed width */
+  height:600px;             /* fixed height */
+  min-height:unset;         /* override previous min-height */
+  background:#fff;
+}
+.pdp-main img, .pdp-main video{
+  width:100%;
+  height:100%;
+  max-width:none;           /* remove earlier caps */
+  max-height:none;
+  object-fit:contain;       /* fit without distortion */
+  border-radius:8px;
+  margin-left:0 !important;
+}
+
+/* Responsive note:
+   Keeping 600x600 fixed even on narrow screens.
+   If you prefer it to shrink on mobile, replace the rule below with:
+     .pdp-main { width:min(600px, 100%); height:auto; aspect-ratio:1 / 1; }
+*/
+@media (max-width:1100px){
+  .pdp-main{ width:600px; height:600px; }
+}
+
+
+/* ============================
+   MOBILE OVERRIDES (<= 768px)
+   - Full-width gallery (no max-content)
+   - Hide thumbs
+   - Lock main viewport height via CSS var set by JS
+   - Stack all images at the same frame height (object-fit: contain)
+   ============================ */
+@media (max-width: 768px){
+  /* Allow scrolling children inside column flex parents */
+  .pdp-wrap,
+  .pdp-left,
+  .pdp-grid,
+  .pdp-leftgrid,
+  .pdp-gallery { min-height:0 !important; }
+
+  /* force gallery to behave like a normal block on mobile */
+  .pdp-gallery{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    grid-template-columns:1fr !important;
+    column-gap:0 !important;
+    gap:0 !important;
+    margin:0 0 10px 0 !important;
+  }
+
+  /* hide thumbs */
+  .pdp-thumbs{ display:none !important; }
+
+  /* CRITICAL: #pdpMainWrap (this .pdp-main element) becomes the scroll container.
+     Its height is driven by --pdp-frame-h set by JS from the first image’s aspect ratio. */
+  .pdp-main{
+    display:block !important;                        /* stop being flex so overflow works reliably */
+    width:100% !important;
+    height:var(--pdp-frame-h, clamp(320px, 62vw, 460px)) !important;
+
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action: pan-y !important;
+    overscroll-behavior:contain !important;
+    overscroll-behavior-y:contain !important;
+    scrollbar-gutter: stable both-edges;
+    pointer-events:auto !important;
+    min-height:0 !important;
+    contain: paint;                                   /* isolate paint to avoid odd overlaps */
+
+    /* match desktop tone */
+    background:#fff !important;
+    border:1px solid #d5d9d9 !important;
+    border-radius:12px !important;
+    box-shadow:0 2px 10px rgba(15,17,17,.06);
+  }
+
+  /* make the scrollbar actually visible (supported engines) */
+  .pdp-main::-webkit-scrollbar{ width:10px; }
+  .pdp-main::-webkit-scrollbar-thumb{
+    background:rgba(15,17,17,.45);
+    border-radius:10px;
+  }
+  .pdp-main{ scrollbar-width:thin; scrollbar-color:rgba(15,17,17,.45) transparent; }
+
+  /* NEW: stacked scroller container + items */
+  #pdpStack{
+    display:block !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+  #pdpStack img{
+    display:block !important;
+    width:100% !important;
+    height:var(--pdp-frame-h, auto) !important;  /* all images share the same frame height */
+    max-width:100% !important;
+    max-height:none !important;
+    object-fit:contain !important;               /* larger images auto-size inside the frame */
+    object-position:center center !important;
+    margin:0 auto !important;
+    user-select:none !important;
+    -webkit-user-drag:none !important;
+    touch-action:pan-y !important;
+    pointer-events:auto !important;
+  }
+
+  /* Legacy single-media nodes — kept neutral; JS hides these on mobile */
+  .pdp-main img,
+  .pdp-main video{
+    max-width:100% !important;
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    object-fit:contain !important;
+    margin:0 auto !important;
+  }
+  .pdp-main video{ display:none !important; }
+}
