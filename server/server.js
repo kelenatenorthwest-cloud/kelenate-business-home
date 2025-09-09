@@ -8,6 +8,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cookieParser = require('cookie-parser');
+const crypto = require('crypto'); // 🔐 added
 
 // 🔐 Security & hardening (added)
 const helmet = require('helmet');
@@ -105,6 +106,58 @@ const authModule = require('./routes/auth');     // exports router + attachUser
 const attachUser = authModule.attachUser;
 app.use(attachUser);
 
+// ---------- 🔐 Basic Admin Guard (env-based) ----------
+function timingSafeEqualStr(a, b) {
+  const A = Buffer.from(String(a), 'utf8');
+  const B = Buffer.from(String(b), 'utf8');
+  if (A.length !== B.length) return false;
+  return crypto.timingSafeEqual(A, B);
+}
+function parseBasicAuth(header) {
+  if (!header || typeof header !== 'string') return null;
+  const pfx = 'Basic ';
+  if (!header.startsWith(pfx)) return null;
+  let decoded;
+  try { decoded = Buffer.from(header.slice(pfx.length).trim(), 'base64').toString('utf8'); }
+  catch { return null; }
+  const i = decoded.indexOf(':');
+  if (i === -1) return null;
+  return { user: decoded.slice(0, i), pass: decoded.slice(i + 1) };
+}
+function requireAdminAuth(req, res, next) {
+  const envUser = process.env.ADMIN_USER;
+  const envPass = process.env.ADMIN_PASS;
+
+  if (!envUser || !envPass) {
+    res
+      .status(503)
+      .set('Cache-Control', 'no-store')
+      .json({ error: 'Admin auth not configured. Set ADMIN_USER and ADMIN_PASS in environment/.env and restart.' });
+    return;
+  }
+  const creds = parseBasicAuth(req.headers.authorization);
+  if (!creds) {
+    res
+      .status(401)
+      .set('WWW-Authenticate', 'Basic realm="Admin Area", charset="UTF-8"')
+      .set('Cache-Control', 'no-store')
+      .json({ error: 'Authentication required' });
+    return;
+  }
+  const okUser = timingSafeEqualStr(creds.user, envUser);
+  const okPass = timingSafeEqualStr(creds.pass, envPass);
+  if (!okUser || !okPass) {
+    res
+      .status(401)
+      .set('WWW-Authenticate', 'Basic realm="Admin Area", charset="UTF-8"')
+      .set('Cache-Control', 'no-store')
+      .json({ error: 'Invalid credentials' });
+    return;
+  }
+  return next();
+}
+// ------------------------------------------------------
+
 // ===== Paths for new structure
 const ROOT_DIR   = path.resolve(__dirname, '..');
 const BUYER_DIR  = path.join(ROOT_DIR, 'buyers-page'); // buyer website
@@ -165,7 +218,7 @@ app.get('/address-book', (req, res) => {
 // ===== Static mounts (order matters)
 // Put /admin BEFORE / to avoid any accidental buyer fallback for admin assets.
 app.use('/uploads', express.static(UPLOAD_DIR));
-app.use('/admin',   express.static(ADMIN_DIR,  { extensions: ['html'] }));
+app.use('/admin',   requireAdminAuth, express.static(ADMIN_DIR,  { extensions: ['html'] })); // 🔐 guarded
 app.use('/img',     express.static(path.join(PUBLIC_DIR, 'img'))); // for /img/placeholder.png
 
 // >>> Serve buyers-page also at /buyers-page so URLs like /buyers-page/side-categories.html work
@@ -237,6 +290,9 @@ app.get('/health',     (_req, res) => res.json({ ok: true }));
 
 // Apply API limiter AFTER the health checks so they remain lightweight
 app.use('/api', apiLimiter);
+
+// 🔐 Guard ALL /api/admin/* endpoints (in addition to per-router guards)
+app.use('/api/admin', requireAdminAuth); // <-- added
 
 // ===== API routers
 // (Most APIs available under both /api and /; addresses ONLY under /api to avoid clashes.)

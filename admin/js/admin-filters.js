@@ -40,8 +40,21 @@
     return { label: String(label).trim(), min: m };
   }
 
+  // NEW: include credentials & handle 401/403 with a user-friendly prompt
   async function fetchConfig() {
-    const r = await fetch('/api/admin/filters-config', { cache: 'no-store' });
+    const r = await fetch('/api/admin/filters-config', {
+      cache: 'no-store',
+      credentials: 'same-origin' // NEW
+    });
+    if (r.status === 401 || r.status === 403) { // NEW
+      alert('Your session expired or you are not authorized. Please reload to re-authenticate.');
+      throw new Error('Unauthorized');
+    }
+    if (!r.ok) { // NEW
+      let msg = r.statusText;
+      try { msg = (await r.json()).error || msg; } catch {}
+      throw new Error(msg);
+    }
     return await r.json();
   }
 
@@ -49,7 +62,8 @@
     const r = await fetch('/api/admin/filters-config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cfg)
+      body: JSON.stringify(cfg),
+      credentials: 'same-origin' // NEW
     });
     if (!r.ok) {
       let msg = r.statusText;
@@ -130,7 +144,7 @@
       if (!tbody || !tpl) return;
       tbody.innerHTML = '';
 
-      // === UPDATED: sort by numeric range (min asc, then max asc; open-ended last) ===
+      // === UPDATED: sort by numeric range (min asc, then max asc; open-ended last)
       const rows = (cfg.price_bands || []).map((b, i) => ({ b, i, lbl: bandLabel(b) }))
         .sort((a, b) => {
           const amin = Number.isFinite(a.b.min) ? a.b.min : 0;

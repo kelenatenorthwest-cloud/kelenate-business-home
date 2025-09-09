@@ -22,19 +22,40 @@ const meta = {
   filters: "Manage left-rail filters (Colours, Price Bands, Discounts)", // NEW
 };
 
+// NEW: per-session cache-busting token (prevents stale admin JS/HTML after deploy)
+const BUST = (() => {
+  try {
+    let v = sessionStorage.getItem('admin:bust');
+    if (!v) { v = Date.now().toString(36); sessionStorage.setItem('admin:bust', v); }
+    return v;
+  } catch { return Date.now().toString(36); }
+})();
+function withBust(url) {
+  return url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(BUST);
+}
+
 const loadedScripts = new Set();
 function ensureScript(src){
   return new Promise((res,rej)=>{
-    if(loadedScripts.has(src)) return res();
+    // NEW: append version so browsers don’t serve stale files after deployment
+    const verSrc = withBust(src);
+    if(loadedScripts.has(verSrc)) return res();
     const s=document.createElement('script');
-    s.src=src; s.onload=()=>{loadedScripts.add(src);res();};
-    s.onerror=rej; document.body.appendChild(s);
+    s.src=verSrc;
+    s.onload=()=>{loadedScripts.add(verSrc);res();};
+    s.onerror=(e)=>{ console.error('Script load failed:', verSrc, e); rej(e); };
+    document.body.appendChild(s);
   });
 }
 
 async function ensureModule(src){
-  try { await import(src); }
-  catch (e) { console.error('Module load failed:', src, e); throw e; }
+  try {
+    // NEW: import with version query for freshness across deploys
+    await import(withBust(src));
+  } catch (e) {
+    console.error('Module load failed:', src, e);
+    throw e;
+  }
 }
 
 // --- Remember/restore last screen via hash + localStorage ---
@@ -81,7 +102,20 @@ async function nav(name){
   root.innerHTML='<div class="card"><p class="muted">Loading…</p></div>';
 
   // fetch section HTML (template literal is required!)
-  const res = await fetch(`/admin/sections/${name}.html`, { cache:'no-store' });
+  // NEW: include cache bust + credentials; show helpful UI on 401
+  const url = withBust(`/admin/sections/${name}.html`);
+  const res = await fetch(url, { cache:'no-store', credentials:'same-origin' });
+  if (res.status === 401 || res.status === 403) {
+    root.innerHTML =
+      '<div class="card"><p class="muted">Session expired or unauthorized.</p>' +
+      '<p><button class="btn" onclick="location.reload()">Re-authenticate</button></p></div>';
+    return;
+  }
+  if (!res.ok) {
+    root.innerHTML =
+      `<div class="card"><p class="muted">Failed to load section: ${name}</p></div>`;
+    return;
+  }
   let html = await res.text();
 
   // Inline <script> inserted via innerHTML won't execute — strip and load JS externally.

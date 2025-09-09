@@ -1,4 +1,7 @@
 // admin/js/inventory/index.js
+// NOTE: This shell wires DOM and delegates data fetching to renderers/controls.
+// Network hardening (credentials, no-store, 401 handling) is applied in those modules.
+
 import { loadCategories, wireListControls, wireDeletedControls, wireTabs } from './controls.js';
 import { renderList } from './renderers.js';
 import { state } from './state.js';

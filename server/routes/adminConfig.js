@@ -3,8 +3,10 @@ const fs = require("fs");
 const fsp = fs.promises;
 const path = require("path");
 const express = require("express");
+const crypto = require("crypto");
 
 const router = express.Router();
+
 const DATA_DIR  = path.join(__dirname, "..", "data");
 const JSON_PATH = path.join(DATA_DIR, "filters-config.json");
 
@@ -36,6 +38,72 @@ const DEFAULT_CONFIG = {
     { id: "d70", label: "70% Off or more", min: 70 }
   ]
 };
+
+// ---------- SECURITY: Basic Auth middleware (env-based) ----------
+function timingSafeEqualStr(a, b) {
+  const aBuf = Buffer.from(String(a), "utf8");
+  const bBuf = Buffer.from(String(b), "utf8");
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+function parseBasicAuth(headerValue) {
+  if (!headerValue || typeof headerValue !== "string") return null;
+  const prefix = "Basic ";
+  if (!headerValue.startsWith(prefix)) return null;
+  const b64 = headerValue.slice(prefix.length).trim();
+  let decoded;
+  try {
+    decoded = Buffer.from(b64, "base64").toString("utf8");
+  } catch {
+    return null;
+  }
+  const idx = decoded.indexOf(":");
+  if (idx === -1) return null;
+  return { user: decoded.slice(0, idx), pass: decoded.slice(idx + 1) };
+}
+
+function requireAdminAuth(req, res, next) {
+  const envUser = process.env.ADMIN_USER;
+  const envPass = process.env.ADMIN_PASS;
+
+  if (!envUser || !envPass) {
+    res
+      .status(503)
+      .set("Cache-Control", "no-store")
+      .json({
+        error:
+          "Admin auth is not configured. Set ADMIN_USER and ADMIN_PASS in environment or .env and restart the server."
+      });
+    return;
+  }
+
+  const creds = parseBasicAuth(req.headers.authorization);
+  if (!creds) {
+    res
+      .status(401)
+      .set("WWW-Authenticate", 'Basic realm="Admin Area", charset="UTF-8"')
+      .set("Cache-Control", "no-store")
+      .json({ error: "Authentication required" });
+    return;
+  }
+
+  const userOk = timingSafeEqualStr(creds.user, envUser);
+  const passOk = timingSafeEqualStr(creds.pass, envPass);
+
+  if (!userOk || !passOk) {
+    res
+      .status(401)
+      .set("WWW-Authenticate", 'Basic realm="Admin Area", charset="UTF-8"')
+      .set("Cache-Control", "no-store")
+      .json({ error: "Invalid credentials" });
+    return;
+  }
+
+  // Auth OK
+  return next();
+}
+// ----------------------------------------------------------------
 
 async function ensureFile() {
   await fsp.mkdir(DATA_DIR, { recursive: true });
@@ -138,6 +206,9 @@ async function readConfig() {
     return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
   }
 }
+
+// ---- Apply admin auth guard to everything below ----
+router.use(requireAdminAuth);
 
 router.get("/", async (_req, res) => {
   const data = await readConfig();

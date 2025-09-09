@@ -3,6 +3,12 @@ import { $, fmt, resolveThumb } from './helpers.js';
 import { API } from './api.js';
 import { state } from './state.js';
 
+// NEW: tiny helpers for clearer auth failures
+function isUnauthorized(err) {
+  return !!(err && (err.status === 401 || err.status === 403 || /unauthor/i.test(String(err.message))));
+}
+const UNAUTH_TEXT = 'Session expired or unauthorized. Please reload to re-authenticate.';
+
 function statusText(p, mode) {
   return mode === 'deleted' ? 'deleted'
        : (String(p.status || 'active')).toLowerCase();
@@ -84,6 +90,12 @@ export async function renderList(){
     if (btnPrev) btnPrev.disabled = st.offset === 0;
     if (btnNext) btnNext.disabled = data.length < st.limit;
   }catch(e){
+    // NEW: clearer unauthorized UX
+    if (isUnauthorized(e)) {
+      if (statusEl) statusEl.textContent = UNAUTH_TEXT;
+      alert(UNAUTH_TEXT);
+      return;
+    }
     if (statusEl) statusEl.textContent = `Error: ${e.message || 'Failed to load'}`;
     alert(e.message || 'Failed to load');
   }
@@ -111,6 +123,12 @@ export async function renderDeleted(){
     if (btnPrev) btnPrev.disabled = st.offset === 0;
     if (btnNext) btnNext.disabled = data.length < st.limit;
   }catch(e){
+    // NEW: clearer unauthorized UX
+    if (isUnauthorized(e)) {
+      if (statusEl) statusEl.textContent = UNAUTH_TEXT;
+      alert(UNAUTH_TEXT);
+      return;
+    }
     if (statusEl) statusEl.textContent = `Error: ${e.message || 'Failed to load deleted products'}`;
     alert(e.message || 'Failed to load deleted products');
   }
@@ -141,6 +159,11 @@ export async function onListClick(e){
       await renderList();
       if ($('#del-tbody')) await renderDeleted();
     }catch(err){
+      // NEW: clearer unauthorized UX
+      if (isUnauthorized(err)) {
+        alert(UNAUTH_TEXT);
+        return;
+      }
       alert(err.message || 'Delete failed');
     }
   }
@@ -153,6 +176,11 @@ export async function onDeletedClick(e){
     await renderDeleted();
     if ($('#inv-tbody')) await renderList();
   }catch(err){
+    // NEW: clearer unauthorized UX
+    if (isUnauthorized(err)) {
+      alert(UNAUTH_TEXT);
+      return;
+    }
     alert(err.message || 'Restore failed');
   }
 }
