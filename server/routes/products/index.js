@@ -1,11 +1,69 @@
 // server/routes/products/index.js
 const express = require('express');
 const router  = express.Router();
+const crypto  = require('crypto'); // 🔐 added
+
+// ---------- 🔐 Basic Admin Guard (env-based) ----------
+function timingSafeEqualStr(a, b) {
+  const A = Buffer.from(String(a), 'utf8');
+  const B = Buffer.from(String(b), 'utf8');
+  if (A.length !== B.length) return false;
+  return crypto.timingSafeEqual(A, B);
+}
+function parseBasicAuth(header) {
+  if (!header || typeof header !== 'string') return null;
+  const pfx = 'Basic ';
+  if (!header.startsWith(pfx)) return null;
+  let decoded;
+  try { decoded = Buffer.from(header.slice(pfx.length).trim(), 'base64').toString('utf8'); }
+  catch { return null; }
+  const i = decoded.indexOf(':');
+  if (i === -1) return null;
+  return { user: decoded.slice(0, i), pass: decoded.slice(i + 1) };
+}
+function requireAdminAuth(req, res, next) {
+  const envUser = process.env.ADMIN_USER;
+  const envPass = process.env.ADMIN_PASS;
+
+  if (!envUser || !envPass) {
+    res
+      .status(503)
+      .set('Cache-Control', 'no-store')
+      .json({ error: 'Admin auth not configured. Set ADMIN_USER and ADMIN_PASS and restart.' });
+    return;
+  }
+  const creds = parseBasicAuth(req.headers.authorization);
+  if (!creds) {
+    res
+      .status(401)
+      .set('WWW-Authenticate', 'Basic realm="Admin Area", charset="UTF-8"')
+      .set('Cache-Control', 'no-store')
+      .json({ error: 'Authentication required' });
+    return;
+  }
+  const okUser = timingSafeEqualStr(creds.user, envUser);
+  const okPass = timingSafeEqualStr(creds.pass, envPass);
+  if (!okUser || !okPass) {
+    res
+      .status(401)
+      .set('WWW-Authenticate', 'Basic realm="Admin Area", charset="UTF-8"')
+      .set('Cache-Control', 'no-store')
+      .json({ error: 'Invalid credentials' });
+    return;
+  }
+  return next();
+}
+// ------------------------------------------------------
 
 // Mount split routes
 require('./list')(router);
 require('./create')(router);
 require('./update')(router);
+
+// 🔐 Guard destructive sub-routes before mounting them
+// These are defined in trash.js as POST /products/:idOrSku/delete and /restore
+router.use(['/products/:idOrSku/delete', '/products/:idOrSku/restore'], requireAdminAuth);
+
 require('./trash')(router);
 
 // Mount export/import BEFORE getOne to avoid /products/:id catching "export"/"import"
@@ -70,7 +128,8 @@ function imageDiskPathFromWeb(u) {
   } catch { return null; }
 }
 
-router.delete('/products/:idOrSku', express.json({ limit: '1kb' }), async (req, res) => {
+// 🔐 Guard the hard-delete endpoint itself
+router.delete('/products/:idOrSku', requireAdminAuth, express.json({ limit: '1kb' }), async (req, res) => {
   try {
     const key = String(req.params.idOrSku || '').trim();
     if (!key) return res.status(400).json({ error: 'Missing id or sku' });

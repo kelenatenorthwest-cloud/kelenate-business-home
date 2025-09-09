@@ -2,23 +2,38 @@
 
 // Try /api first, then no prefix; surface server response body on errors
 export async function apiFetch(path, opts) {
+  // Default fetch options to avoid stale caches and ensure creds are sent
+  const merged = {
+    credentials: 'same-origin',
+    cache: 'no-store',
+    ...opts
+  };
+
   const tries = [`/api${path}`, path];
   let lastErr, lastRes = null;
+
   for (const url of tries) {
     try {
-      const r = await fetch(url, opts);
+      const r = await fetch(url, merged);
       lastRes = r;
       if (r.ok) return r;
+      // keep looping; capture a simple error for now, parse body later
       lastErr = new Error(`${r.status} ${r.statusText}`);
+      lastErr.status = r.status;
     } catch (e) {
       lastErr = e;
     }
   }
+
   if (lastRes) {
     let body = '';
     try { body = await lastRes.text(); } catch {}
-    throw new Error(body || (lastErr?.message || 'Request failed'));
+    const msg = body || (lastErr?.message || 'Request failed');
+    const err = new Error(msg);
+    err.status = lastRes.status;
+    throw err;
   }
+
   throw lastErr || new Error('Request failed');
 }
 

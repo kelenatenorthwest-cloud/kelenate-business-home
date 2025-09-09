@@ -1,4 +1,6 @@
 // admin/js/inventory/controls.js
+// NOTE: Networking/auth hardening is handled in helpers/api/renderers. This file just wires UI state.
+
 import { $, fmt } from './helpers.js';
 import { API } from './api.js';
 import { state } from './state.js';

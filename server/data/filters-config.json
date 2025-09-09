@@ -1,5 +1,5 @@
 {
-  "unavailable_mode": "hide",
+  "unavailable_mode": "lock",
   "colors": [
     {
       "name": "Multi"
