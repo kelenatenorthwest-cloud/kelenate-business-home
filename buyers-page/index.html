@@ -13,7 +13,7 @@
   <!-- Base styles -->
   <link rel="stylesheet" href="/css/styles.css" />
   <!-- Amazon-like product cards (absolute path + cache-bust to ensure the updated rules load) -->
-  <link rel="stylesheet" href="/buyers-page/css/cards.css?v=home-cols-1" />
+  <link rel="stylesheet" href="/buyers-page/css/cards.css?v=home-cols-2" />
 
   <!-- Sidebar styles (cache-busted, absolute path so it works at / or /buyers-page) -->
   <link rel="stylesheet" href="/buyers-page/css/side-categories.css?v=4" />
@@ -30,6 +30,26 @@
     /* ---- fix: desktop mega menu must float above sticky header (z-index:5000) ---- */
     /* keep this higher than .sticky-chrome (5000) and search dropdowns */
     #megaMenu{ z-index:5200 !important; }
+
+    /* ========= Mobile scroll untrap (vertical should always work) ========= */
+    @media (max-width: 900px){
+      html, body{
+        overscroll-behavior-y: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y; /* prefer vertical page scroll */
+      }
+      /* hero and its inner slides must not block vertical swipes */
+      .hero, .hero__slides{
+        touch-action: pan-y !important;
+        overscroll-behavior-y: auto !important;
+      }
+      /* main content/rows should also allow vertical gestures */
+      .content, .rows{
+        touch-action: pan-y !important;
+        overscroll-behavior-y: auto !important;
+      }
+    }
   </style>
 </head>
 <body>

@@ -99,6 +99,41 @@ const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, Number(n) || 0));
 // breakpoint helpers
 const isSmall = () => window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
 
+/* ---------- NEW: relax scroller touch/snap (inline fallback to CSS) ---------- */
+function relaxScrollerTouch(scroller){
+  if (!scroller) return;
+  if (!scroller.classList.contains('home-scroller')) return;
+  // Allow vertical gestures to bubble to the page
+  if (scroller.style.touchAction !== 'pan-x pan-y') scroller.style.touchAction = 'pan-x pan-y';
+  // Allow scroll chaining to the page at edges
+  if (scroller.style.overscrollBehaviorY !== 'auto') scroller.style.overscrollBehaviorY = 'auto';
+  // Reduce sticky feel vs strict mandatory snap
+  const curSnap = scroller.style.scrollSnapType || getComputedStyle(scroller).scrollSnapType || '';
+  if (!curSnap || /x\s+mandatory/i.test(curSnap)) scroller.style.scrollSnapType = 'x proximity';
+}
+
+/* ---------- NEW: disable scroller if it doesn't overflow ---------- */
+function maybeDisableScrollerIfNoOverflow(scroller, cols){
+  if (!scroller || !scroller.classList.contains('home-scroller')) return;
+  // measure after layout
+  requestAnimationFrame(() => {
+    const hasOverflow = scroller.scrollWidth > (scroller.clientWidth + 1);
+    if (!hasOverflow) {
+      scroller.classList.remove('home-scroller');
+      // restore non-scroller grid explicitly (match your non-scroller inline)
+      const styles = [
+        'display:grid',
+        'min-width:0',
+        `--cols:${cols}`,
+        'grid-auto-flow:row',
+        'grid-template-columns:repeat(var(--cols),1fr)',
+        'grid-auto-columns:initial'
+      ].join(';');
+      scroller.setAttribute('style', styles);
+    }
+  });
+}
+
 /* ---------- row ---------- */
 function renderCategoryRow(title, items, cols, useScroller){
   const section = h('section', {class:'row amazon-row'});
@@ -139,6 +174,13 @@ function renderCategoryRow(title, items, cols, useScroller){
   );
 
   section.append(wrap);
+
+  // ---- NEW: scroller safeguards (only if scroller used) ----
+  if (useScroller) {
+    relaxScrollerTouch(wrap);
+    maybeDisableScrollerIfNoOverflow(wrap, cols);
+  }
+
   return section;
 }
 
@@ -215,9 +257,36 @@ export async function renderHomeRows(){
   function applyResponsiveLayout(){
     const small = isSmall();
     document.querySelectorAll('.row.amazon-row .products.home-products').forEach(wrap => {
+      const wasScroller = wrap.classList.contains('home-scroller');
       wrap.classList.toggle('home-scroller', small);
-      // we deliberately do NOT set --vis here; CSS controls it via media queries
+      if (small) {
+        // Ensure relaxed touch/snap and disable scroller if there’s no overflow
+        relaxScrollerTouch(wrap);
+        // Determine the current --cols used by this wrap (fallback to homeCols)
+        const computedCols = Number(getComputedStyle(wrap).getPropertyValue('--cols')) || homeCols;
+        maybeDisableScrollerIfNoOverflow(wrap, computedCols);
+      } else if (wasScroller) {
+        // When turning off scroller, restore non-scroller grid explicitly
+        const cols = Number(getComputedStyle(wrap).getPropertyValue('--cols')) || homeCols;
+        const styles = [
+          'display:grid',
+          'min-width:0',
+          `--cols:${cols}`,
+          'grid-auto-flow:row',
+          'grid-template-columns:repeat(var(--cols),1fr)',
+          'grid-auto-columns:initial'
+        ].join(';');
+        wrap.setAttribute('style', styles);
+      }
     });
   }
-  window.addEventListener('resize', applyResponsiveLayout);
+
+  // Call once so initial layout is synced, then on resize
+  applyResponsiveLayout();
+
+  // Avoid duplicate listeners if renderHomeRows runs again for any reason
+  if (!window.__homeRowsResizeHooked){
+    window.addEventListener('resize', applyResponsiveLayout);
+    window.__homeRowsResizeHooked = true;
+  }
 }

@@ -38,24 +38,37 @@ function clampMainHeight() {
 
 function enableInnerScroll(scroller) {
   if (!scroller) return;
+
+  // --- Keep native scrolling; allow page to take over at edges ---
   scroller.style.webkitOverflowScrolling = 'touch';
   scroller.style.touchAction = 'pan-y';
-  scroller.style.overscrollBehavior = 'contain';
-  scroller.style.overscrollBehaviorY = 'contain';
+  // IMPORTANT: allow scroll chaining to the page when at edges
+  scroller.style.overscrollBehavior = 'auto';
+  scroller.style.overscrollBehaviorY = 'auto';
 
-  // Wheel
+  // Remove any previous handlers if re-wired
+  if (scroller.__wheelHandler) {
+    scroller.removeEventListener('wheel', scroller.__wheelHandler, { passive: false });
+  }
+  if (scroller.__touchStartHandler) {
+    scroller.removeEventListener('touchstart', scroller.__touchStartHandler, { passive: true });
+  }
+  if (scroller.__touchMoveHandler) {
+    scroller.removeEventListener('touchmove', scroller.__touchMoveHandler, { passive: false });
+  }
+
+  // Only intercept when we actually consume scroll *inside* the scroller.
   const onWheel = (e) => {
-    if (e.ctrlKey) return;
+    if (e.ctrlKey) return; // pinch-zoom etc.
     const canScroll = scroller.scrollHeight > scroller.clientHeight;
-    if (!canScroll) return;
+    if (!canScroll) return; // let page handle it
     const prev = scroller.scrollTop;
-    const atTop = prev <= 0;
-    const atBottom = prev + scroller.clientHeight >= scroller.scrollHeight - 1;
     scroller.scrollTop += e.deltaY;
-    if (scroller.scrollTop !== prev || atTop || atBottom) e.preventDefault();
+    const consumed = scroller.scrollTop !== prev;
+    // prevent only if we truly scrolled this element; otherwise allow page to scroll
+    if (consumed) e.preventDefault();
   };
 
-  // Touch
   let lastY = 0;
   const onTouchStart = (e) => {
     if (e.touches.length !== 1) return;
@@ -64,24 +77,33 @@ function enableInnerScroll(scroller) {
   const onTouchMove = (e) => {
     if (e.touches.length !== 1) return;
     const y = e.touches[0].clientY;
-    const dy = y - lastY;
+    // Delta positive when finger moves UP (mirror wheel deltaY)
+    const deltaY = lastY - y;
     lastY = y;
+
     const canScroll = scroller.scrollHeight > scroller.clientHeight;
-    if (!canScroll) return;
+    if (!canScroll) return; // allow page to handle it
+
     const prev = scroller.scrollTop;
-    const atTop = prev <= 0;
-    const atBottom = prev + scroller.clientHeight >= scroller.scrollHeight - 1;
-    scroller.scrollTop -= dy; // invert to match finger
-    if (scroller.scrollTop !== prev || atTop || atBottom) e.preventDefault();
+    scroller.scrollTop += deltaY;
+
+    const consumed = scroller.scrollTop !== prev;
+    // Only block the event if we actually moved the inner scroller.
+    // If we're at the top/bottom and cannot move, let the page scroll naturally.
+    if (consumed) e.preventDefault();
   };
 
-  // avoid duplicates
-  if (!scroller.dataset.scrollWired) {
-    scroller.addEventListener('wheel', onWheel, { passive: false });
-    scroller.addEventListener('touchstart', onTouchStart, { passive: true });
-    scroller.addEventListener('touchmove', onTouchMove, { passive: false });
-    scroller.dataset.scrollWired = '1';
-  }
+  // Attach updated, edge-friendly listeners
+  scroller.addEventListener('wheel', onWheel, { passive: false });
+  scroller.addEventListener('touchstart', onTouchStart, { passive: true });
+  scroller.addEventListener('touchmove', onTouchMove, { passive: false });
+
+  // keep refs to cleanup on re-wire
+  scroller.__wheelHandler = onWheel;
+  scroller.__touchStartHandler = onTouchStart;
+  scroller.__touchMoveHandler = onTouchMove;
+
+  scroller.dataset.scrollWired = '1';
 }
 
 /* ------- legacy: aspect-ratio aware sizing for a single image (kept for compatibility) ------- */
@@ -269,8 +291,9 @@ function buildStack(wrap, frameH, urls, videoSrc) {
   wrap.style.overflowX = 'hidden';
   wrap.style.webkitOverflowScrolling = 'touch';
   wrap.style.touchAction = 'pan-y';
-  wrap.style.overscrollBehavior = 'contain';
-  wrap.style.overscrollBehaviorY = 'contain';
+  // IMPORTANT: allow page scroll chaining when at edges to avoid "stuck" feel
+  wrap.style.overscrollBehavior = 'auto';
+  wrap.style.overscrollBehaviorY = 'auto';
   wrap.style.height = frameH + 'px';                      // viewport height == first image frame
   wrap.style.setProperty('--pdp-frame-h', frameH + 'px'); // drive CSS var for consistency
   enableInnerScroll(wrap);
@@ -353,6 +376,9 @@ function applyMobileMediaBehavior(){
     wrap.style.overflowX = 'hidden';
     wrap.style.height = h + 'px';
     wrap.style.setProperty('--pdp-frame-h', h + 'px');
+    // Allow chaining in fallback too
+    wrap.style.overscrollBehavior = 'auto';
+    wrap.style.overscrollBehaviorY = 'auto';
     enableInnerScroll(wrap);
 
     if (mainImg && !wrap.__stackAwaitSrcObs) {

@@ -226,7 +226,9 @@
   scroll-snap-type: x mandatory !important;
   -webkit-overflow-scrolling: touch !important;
   overscroll-behavior-x: contain !important;
-  touch-action: pan-x;
+  /* ⬇️ allow vertical gestures to bubble for page scroll when swipe starts here */
+  overscroll-behavior-y: auto !important;
+  touch-action: pan-x; /* baseline; relaxed on mobile in overrides below */
 }
 .row.amazon-row .products.home-products.home-scroller > a{ scroll-snap-align: start; height: 100%; }
 
@@ -236,6 +238,16 @@
 }
 @media (max-width:640px){
   .row.amazon-row .products.home-products.home-scroller{ --vis: 2.2; }
+}
+
+/* ✅ Mobile overrides to improve vertical scrolling when touch starts on the scroller */
+@media (max-width: 900px){
+  .row.amazon-row .products.home-products.home-scroller{
+    /* let vertical swipes scroll the page even if the finger is over the row */
+    touch-action: pan-x pan-y;
+    /* reduce “sticky” feel so slight diagonal drags don’t fight vertical scroll */
+    scroll-snap-type: x proximity !important;
+  }
 }
 
 /* Optional: thinner scrollbar for scroller only */
